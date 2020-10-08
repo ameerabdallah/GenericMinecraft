@@ -10,6 +10,13 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.Display;
+import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.util.glu.GLU.gluOrtho2D;
 
 /**
  *
@@ -41,7 +48,6 @@ public class LWJGLMain {
         Keyboard.create();
         
         // Mouse
-        Mouse.setGrabbed(true);
         Mouse.create();
         
         // OpenGL Code
@@ -74,7 +80,34 @@ public class LWJGLMain {
     
     public void run()
     {
-        
+        while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
+        {
+            if(Display.isVisible())
+            {
+                Mouse.setGrabbed(true);
+                processKeyboard();
+                processMouse();
+                update();
+                render();
+            }
+            else if(Display.isDirty())
+            {
+                Mouse.setGrabbed(false);
+                render();
+            }
+            
+            try
+            {
+                Thread.sleep(100);
+            }
+            catch(InterruptedException ex)
+            {
+                
+            }
+            
+            Display.update();
+            Display.sync(60);
+        }
     }
     
     public void render()
@@ -94,6 +127,16 @@ public class LWJGLMain {
     
     public void resizeGL()
     {
+        glViewport(0, 0, W_WIDTH, W_HEIGHT);
+        
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluOrtho2D(0, 0, W_WIDTH, W_WIDTH);
+        glPushMatrix();
+        
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glPushMatrix();
         
     }
     
