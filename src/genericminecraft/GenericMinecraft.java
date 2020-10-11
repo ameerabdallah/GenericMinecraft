@@ -17,6 +17,25 @@ public class GenericMinecraft {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        LWJGLMain main = null;
+        try
+        {
+            main = new LWJGLMain();
+            main.create();
+            main.run();
+        }
+        catch(Exception ex)
+        {
+            System.out.println("An error has occured: " + ex.toString() + "\n");
+            ex.printStackTrace();
+        }
+        finally
+        {
+            if(main != null)
+            {
+                main.destroy();
+            }
+        }
         
     }
     
