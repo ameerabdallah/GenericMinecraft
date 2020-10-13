@@ -11,17 +11,26 @@ import static org.lwjgl.opengl.GL11.glColor3f;
 import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glVertex3f;
 
-/**
- *
- * @author ameer
- */
+/***************************************************************
+* @file: Block.java
+* @author: Ameer Abdallah
+* @class: CS 4450 - Computer Graphics
+* 
+* @assignment: Checkpoint 1
+* @date last modified: 10/12/2020
+*
+* @purpose: 
+* Holds block information
+****************************************************************/ 
 public class Block {
     
-    BlockType blockType;
-    float blockLength;
-    float x, y, z;
-            
-    public Block(float x, float y, float z)
+    private float blockLength;
+    private float x, y, z;
+    private BlockType blockType;
+    
+    // method: Block
+    // construct a Block object
+    public Block(float x, float y, float z, BlockType blockType)
     {
         blockLength = 1;
         this.x = x*2*blockLength;
@@ -29,7 +38,9 @@ public class Block {
         this.z = z*2*blockLength;
     }
     
-    public void drawBlock(Camera cam)
+    // method: drawBlock
+    // display block to the display
+    public void drawBlock()
     {
         glBegin(GL_QUADS);
             // Top
@@ -69,9 +80,6 @@ public class Block {
             glVertex3f(x+blockLength, y-blockLength, z+blockLength);
             glVertex3f(x+blockLength, y-blockLength, z-blockLength);
         glEnd();
-
     }
-    
-    
     
 }

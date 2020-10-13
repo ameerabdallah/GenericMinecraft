@@ -9,16 +9,26 @@ import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import org.lwjgl.util.vector.Vector3f;
 
-/**
- *
- * @author ameer
- */
+/***************************************************************
+* @file: Camera.java
+* @author: Ameer Abdallah
+* @class: CS 4450 - Computer Graphics
+* 
+* @assignment: Checkpoint 1
+* @date last modified: 10/12/2020
+*
+* @purpose: 
+* Helps transform world space to screen space
+*
+****************************************************************/ 
 public class Camera {
     private Vector3f pos;
     private Vector3f iPos;
     private float yaw;
     private float pitch;
     
+    // method: Camera
+    // construct a Camera object
     public Camera(float x, float y, float z)
     {
         pos = new Vector3f(x, y, z);
@@ -31,11 +41,16 @@ public class Camera {
         pitch = 0.0f;
     }
     
+    // method: yaw
+    // increment the local variable yaw by a value 'n'
     public void yaw(float n)
     {
         yaw += n;
     }
     
+    // method: pitch
+    // increment the local variable pitch by a value 'n' while clamping it
+    // -89 degress < pitch < 89 degrees
     public void pitch(float n)
     {
         if(pitch > 89.0f) pitch = 89.0f;
@@ -43,6 +58,8 @@ public class Camera {
         pitch -= n;
     }
     
+    // method: walkForward
+    // move forward
     public void walkForward(float distance)
     {
         float dx = distance * (float)Math.sin(Math.toRadians(yaw));
@@ -51,6 +68,8 @@ public class Camera {
         pos.z += dz;
     }
     
+    // method: walkBackward
+    // move backward
     public void walkBackward(float distance)
     {
         float dx = distance * (float)Math.sin(Math.toRadians(yaw+180));
@@ -59,6 +78,8 @@ public class Camera {
         pos.z += dz;
     }
     
+    // method: strafeLeft
+    // move left
     public void strafeLeft(float distance)
     {
         float dx = distance * (float)Math.sin(Math.toRadians(yaw-90));
@@ -67,6 +88,8 @@ public class Camera {
         pos.z += dz;
     }
     
+    // method: strafeRight
+    // move right
     public void strafeRight(float distance)
     {
         float dx = distance * (float)Math.sin(Math.toRadians(yaw+90));
@@ -75,16 +98,22 @@ public class Camera {
         pos.z += dz;
     }
     
+    // method: moveUp
+    // move up along y-axis
     public void moveUp(float distance)
     {
         pos.y -= distance;
     }
     
+    // method: moveDown
+    // move down along y-axis
     public void moveDown(float distance)
     {
         pos.y += distance;
     }
     
+    // method: lookThrough
+    // transform vertices to give camera perspective
     public void lookThrough()
     {
         glRotatef(pitch, 1.0f, 0.0f, 0.0f);

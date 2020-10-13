@@ -6,7 +6,6 @@
 package genericminecraft;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -16,64 +15,72 @@ import org.lwjgl.opengl.DisplayMode;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
 import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
+import static org.lwjgl.opengl.GL11.GL_POLYGON_SMOOTH;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
 import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
-/**
- *
- * @author ameer
- */
+/***************************************************************
+* @file: LWJGLMain.java
+* @author: Ameer Abdallah
+* @class: CS 4450 - Computer Graphics
+* 
+* @assignment: Checkpoint 1
+* @date last modified: 10/12/2020
+*
+* @purpose: 
+* Display a cube with different colors on each side. using the w a s d keys to move
+* and the mouse to look around you can move around the cube
+*
+****************************************************************/ 
 public class LWJGLMain {
     
+    // window information
     public static final int 
             W_WIDTH = 640,
             W_HEIGHT = 480;
     
-    // camera orientation and position vectors and floats
+    // movement sensativity
     private float mouseSensitivity;
     private float moveSpeed;
+    
+    // display information
     private DisplayMode displayMode;
     
+    // timing information
     private float lastFrame;
     private float deltaTime;
     
+    // camera information used to transform from world space to screen space
     private Camera camera;
     
-    private ArrayList<Block> blocks;
+    // cube
+    private Block block;
     
+    
+    // method: LWJGLMain
+    // initialize information
     public LWJGLMain() throws IOException
     {
-        
         lastFrame = getTime();
         
-        mouseSensitivity = 20f;
-        moveSpeed = 300f;
+        mouseSensitivity = 0.003f;
+        moveSpeed = 0.01f;
         
         camera = new Camera(0f, 0f, -25f);
         
-        blocks = new ArrayList<>();
-        
-        for(int x = 0; x < 8; x++)
-        {
-            for(int z = 0; z < 8; z++)
-            {
-                for(int y = 0; y < 4; y++)
-                {
-                    blocks.add(new Block(x, y, z));
-                }
-            }
-        }
+        block = new Block(0.0f, 0.0f, 0.0f, BlockType.AIR);
     }
     
     // method: create
@@ -125,7 +132,7 @@ public class LWJGLMain {
     // make changes to the program based on keyboard input
     private void processKeyboard()
     {
-        float v = moveSpeed/deltaTime;
+        float v = moveSpeed*deltaTime;
         
         if(Keyboard.isKeyDown(Keyboard.KEY_D)) camera.strafeRight(v);
         if(Keyboard.isKeyDown(Keyboard.KEY_A)) camera.strafeLeft(v);
@@ -142,23 +149,25 @@ public class LWJGLMain {
         float dx = Mouse.getX()- (W_WIDTH/2);
         float dy = Mouse.getY() - (W_HEIGHT/2);
         
-        camera.yaw(dx * mouseSensitivity/deltaTime);
-        camera.pitch(dy * mouseSensitivity/deltaTime);
+        camera.yaw(dx * mouseSensitivity*deltaTime);
+        camera.pitch(dy * mouseSensitivity*deltaTime);
         
         Mouse.setCursorPosition(W_WIDTH/2, W_HEIGHT/2);
     }
     
+    // method: run
+    // runs the game loop
     public void run()
     {
         while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
         {
             deltaTime = getDeltaTime();
+            
             if(Display.isVisible())
             {
                 Mouse.setGrabbed(true);
                 processKeyboard();
                 processMouse();
-                update();
                 render();
             }
             else 
@@ -193,17 +202,11 @@ public class LWJGLMain {
         
         camera.lookThrough();
         
-        for(int i = 0; i < blocks.size(); i++)
-        {
-            blocks.get(i).drawBlock(camera);
-        }
+        block.drawBlock();
     }
     
-    private long getTime()
-    {
-        return (Sys.getTime() * 1000) / Sys.getTimerResolution();
-    }
-    
+    // method: getDeltaTime
+    // returns the time elapsed since the last time getDeltaTime() was called
     private float getDeltaTime()
     {
         double currentTime = getTime();
@@ -212,11 +215,15 @@ public class LWJGLMain {
         return (float)deltaTime;
     }
     
-    private void update()
+    // method: getTime
+    // returns system time
+    private long getTime()
     {
-        
+        return (Sys.getTime() * 1000) / Sys.getTimerResolution();
     }
     
+    // method: initGL
+    // initialize openGL
     private void initGL()
     {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -229,6 +236,8 @@ public class LWJGLMain {
         
         glMatrixMode(GL_MODELVIEW);
         
+        glEnable(GL_POLYGON_SMOOTH);
+        glDisable(GL_DEPTH_TEST);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();
         glPushMatrix();
