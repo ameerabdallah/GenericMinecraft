@@ -32,6 +32,7 @@ public class Block {
     // construct a Block object
     public Block(float x, float y, float z, BlockType blockType)
     {
+        this.blockType = blockType;
         blockLength = 1;
         this.x = x*2*blockLength;
         this.y = y*2*blockLength;

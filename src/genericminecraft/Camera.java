@@ -118,7 +118,6 @@ public class Camera {
     {
         glRotatef(pitch, 1.0f, 0.0f, 0.0f);
         glRotatef(yaw, 0.0f, 1.0f, 0.0f);
-        
         glTranslatef(pos.x, pos.y, pos.z);
     }
 }

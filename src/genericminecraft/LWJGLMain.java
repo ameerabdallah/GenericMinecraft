@@ -149,8 +149,8 @@ public class LWJGLMain {
         float dx = Mouse.getX()- (W_WIDTH/2);
         float dy = Mouse.getY() - (W_HEIGHT/2);
         
-        camera.yaw(dx * mouseSensitivity*deltaTime);
-        camera.pitch(dy * mouseSensitivity*deltaTime);
+        camera.yaw(dx * mouseSensitivity * deltaTime);
+        camera.pitch(dy * mouseSensitivity * deltaTime);
         
         Mouse.setCursorPosition(W_WIDTH/2, W_HEIGHT/2);
     }
@@ -162,7 +162,6 @@ public class LWJGLMain {
         while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
         {
             deltaTime = getDeltaTime();
-            
             if(Display.isVisible())
             {
                 Mouse.setGrabbed(true);
@@ -201,7 +200,6 @@ public class LWJGLMain {
         glEnable(GL_CULL_FACE);
         
         camera.lookThrough();
-        
         block.drawBlock();
     }
     
