@@ -41,7 +41,7 @@ public class Chunk
                 }
             }
         }
-        
+        System.out.println("Finished Randomizing Chunk");
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
         this.startX = startX;
@@ -82,8 +82,6 @@ public class Chunk
             {
                 for(float y = 0; y < CHUNK_SIZE; y++)
                 {
-                    if(!blocks[(int)x][(int)y][(int)z].isActive()) 
-                        continue;
                     vertexPositionData.put
                     (
                     createCube
@@ -98,13 +96,12 @@ public class Chunk
                     getCubeColor(
                     blocks[(int)x][(int)y][(int)z])
                     ));
-                    
-                    vertexColorData.flip();
-                    vertexPositionData.flip();
                 }
             }
         }
         
+        vertexColorData.flip();
+        vertexPositionData.flip();
         glBindBuffer(GL_ARRAY_BUFFER,
                 VBOVertexHandle);
         glBufferData(GL_ARRAY_BUFFER,
@@ -139,7 +136,7 @@ public class Chunk
         
         for(int i = 0; i < cubeColors.length; i++)
         {
-            cubeColors[i] = cubeColors[i%cubeColorArray.length];
+            cubeColors[i] = cubeColorArray[i%cubeColorArray.length];
         }
         
         return cubeColors;

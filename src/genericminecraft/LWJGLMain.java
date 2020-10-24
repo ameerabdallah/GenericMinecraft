@@ -25,12 +25,12 @@ import static org.lwjgl.opengl.GL11.GL_POLYGON_SMOOTH;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
 import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
@@ -123,7 +123,7 @@ public class LWJGLMain {
         initGL();
         
         // create camera
-        camera = new Camera(0f, 100f, -25f);
+        camera = new Camera(0f, 0f, -40f);
     }
     
     // method: destroy
@@ -248,7 +248,7 @@ public class LWJGLMain {
         glEnable(GL_POLYGON_SMOOTH);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();
-        glPopMatrix();
+        glPushMatrix();
     }
     
     
