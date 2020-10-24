@@ -42,7 +42,10 @@ public class Block
         SAND(2),
         STONE(3),
         BEDROCK(4),
-        WATER(5);
+        WATER(5),
+        GRAVEL(6),
+        NOT_DEFINED(7)
+        ;
 
         private int BlockID;
 
@@ -74,5 +77,10 @@ public class Block
     public int GetID()
     {
         return blockType.GetID();
+    }
+    
+    public BlockType getType()
+    {
+        return blockType;
     }
 }
