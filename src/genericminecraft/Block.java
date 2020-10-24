@@ -22,65 +22,57 @@ import static org.lwjgl.opengl.GL11.glVertex3f;
 * @purpose: 
 * Holds block information
 ****************************************************************/ 
-public class Block {
-    
-    private float blockLength;
-    private float x, y, z;
-    private BlockType blockType;
+public class Block 
+{
+    private boolean isActive; // to draw or not to draw
+    private BlockType blockType; // whatever kind of block it is
     
     // method: Block
     // construct a Block object
-    public Block(float x, float y, float z, BlockType blockType)
+    public Block(BlockType blockType)
     {
         this.blockType = blockType;
-        blockLength = 1;
-        this.x = x*2*blockLength;
-        this.y = y*2*blockLength;
-        this.z = z*2*blockLength;
+        isActive = true;
     }
     
-    // method: drawBlock
-    // display block to the display
-    public void drawBlock()
+    public enum BlockType 
     {
-        glBegin(GL_QUADS);
-            // Top
-            glColor3f(0.0f,0.0f,1.0f);
-            glVertex3f(x+blockLength, y+blockLength, z-blockLength);
-            glVertex3f(x-blockLength, y+blockLength, z-blockLength);
-            glVertex3f(x-blockLength, y+blockLength, z+blockLength);
-            glVertex3f(x+blockLength, y+blockLength, z+blockLength);
-            // Bottom
-            glColor3f(0.0f, 1.0f, 0.0f);
-            glVertex3f(x+blockLength, y-blockLength, z+blockLength);
-            glVertex3f(x-blockLength, y-blockLength, z+blockLength);
-            glVertex3f(x-blockLength, y-blockLength, z-blockLength);
-            glVertex3f(x+blockLength, y-blockLength, z-blockLength);
-            // Front
-            glColor3f(1.0f, 0.0f, 0.0f);
-            glVertex3f(x+blockLength, y+blockLength, z+blockLength);
-            glVertex3f(x-blockLength, y+blockLength, z+blockLength);
-            glVertex3f(x-blockLength, y-blockLength, z+blockLength);
-            glVertex3f(x+blockLength, y-blockLength, z+blockLength);
-            // Back
-            glColor3f(1.0f, 1.0f, 0.0f);
-            glVertex3f(x+blockLength, y-blockLength, z-blockLength);
-            glVertex3f(x-blockLength, y-blockLength, z-blockLength);
-            glVertex3f(x-blockLength, y+blockLength, z-blockLength);
-            glVertex3f(x+blockLength, y+blockLength, z-blockLength);
-            // Left
-            glColor3f(0.0f, 1.0f, 1.0f);
-            glVertex3f(x-blockLength, y+blockLength, z+blockLength);
-            glVertex3f(x-blockLength, y+blockLength, z-blockLength);
-            glVertex3f(x-blockLength, y-blockLength, z-blockLength);
-            glVertex3f(x-blockLength, y-blockLength, z+blockLength);
-            // Right
-            glColor3f(1.0f, 1.0f, 1.0f);
-            glVertex3f(x+blockLength, y+blockLength, z-blockLength);
-            glVertex3f(x+blockLength, y+blockLength, z+blockLength);
-            glVertex3f(x+blockLength, y-blockLength, z+blockLength);
-            glVertex3f(x+blockLength, y-blockLength, z-blockLength);
-        glEnd();
+        GRASS(0),
+        DIRT(1),
+        SAND(2),
+        STONE(3),
+        BEDROCK(4),
+        WATER(5);
+
+        private int BlockID;
+
+        BlockType(int i)
+        {
+            BlockID = i;
+        }
+
+        public int GetID()
+        {
+            return BlockID;
+        }
+        public void SetID(int i)
+        {
+            BlockID = i;
+        }
     }
     
+    public boolean isActive()
+    {
+        return isActive;
+    }
+    
+    public void setActive(boolean activeStatus)
+    {
+        this.isActive = activeStatus;
+    }
+    
+    public int GetID()
+    {
+        return blockType.GetID();
+    }
 }

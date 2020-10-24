@@ -12,6 +12,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -22,12 +23,14 @@ import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_POLYGON_SMOOTH;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
 import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glEnableClientState;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
@@ -65,8 +68,7 @@ public class LWJGLMain {
     // camera information used to transform from world space to screen space
     private Camera camera;
     
-    // cube
-    private Block block;
+    private Chunk chunk;
     
     
     // method: LWJGLMain
@@ -78,9 +80,11 @@ public class LWJGLMain {
         mouseSensitivity = 0.003f;
         moveSpeed = 0.01f;
         
-        camera = new Camera(0f, 0f, -25f);
-        
-        block = new Block(0.0f, 0.0f, 0.0f, BlockType.AIR);
+    }
+    
+    public void createChunks()
+    {
+        chunk = new Chunk(0, 0);
     }
     
     // method: create
@@ -117,6 +121,9 @@ public class LWJGLMain {
         
         // OpenGL Code
         initGL();
+        
+        // create camera
+        camera = new Camera(0f, 100f, -25f);
     }
     
     // method: destroy
@@ -200,7 +207,7 @@ public class LWJGLMain {
         glEnable(GL_CULL_FACE);
         
         camera.lookThrough();
-        block.drawBlock();
+        chunk.render();
     }
     
     // method: getDeltaTime
@@ -234,11 +241,14 @@ public class LWJGLMain {
         
         glMatrixMode(GL_MODELVIEW);
         
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glEnable(GL_DEPTH_TEST);
+        
         glEnable(GL_POLYGON_SMOOTH);
-        glDisable(GL_DEPTH_TEST);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();
-        glPushMatrix();
+        glPopMatrix();
     }
     
     
