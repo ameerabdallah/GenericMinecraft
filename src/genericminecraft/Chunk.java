@@ -16,6 +16,7 @@ import org.newdawn.slick.util.ResourceLoader;
 public class Chunk 
 {
     static final int CHUNK_SIZE = 30;
+    final int CHUNK_H_VARIATION;
     static final int CUBE_LENGTH = 2;
     private Block[][][] blocks;
     private int VBOVertexHandle;
@@ -24,9 +25,10 @@ public class Chunk
     private Texture texture;
     private int startX, startZ;
     private Random r;
-    private float[][] noise;
+    private SimplexNoise sNoise;
+    private double noise[][];
     
-    public Chunk(int startX, int startZ)
+    public Chunk(int startX, int startZ, SimplexNoise sNoise)
     {
         // open texture
         try
@@ -38,30 +40,43 @@ public class Chunk
         {
             e.printStackTrace();
         }
+        texture.hasAlpha();
         
-        // generate perlin noise
+        this.sNoise = sNoise;
+        
         r = new Random();
-        blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+        CHUNK_H_VARIATION = sNoise.largestFeature;
+        
+        blocks = new Block[CHUNK_SIZE][CHUNK_SIZE+CHUNK_H_VARIATION][CHUNK_SIZE];
+        noise = new double[CHUNK_SIZE][CHUNK_SIZE];
+        
+        
         for(int x = 0; x < CHUNK_SIZE; x++)
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                for(int y = 0; y  < CHUNK_SIZE; y++)
+                noise[x][z] = sNoise.getNoise(x+(startX*CHUNK_SIZE), z+(startZ*CHUNK_SIZE));
+            }
+        }
+        
+        for(int x = 0; x < CHUNK_SIZE; x++)
+        {
+            for(int z = 0; z < CHUNK_SIZE; z++)
+            {
+                for(int y = 0; y  < noise[x][z]+CHUNK_SIZE; y++)
                 {
-                    if(r.nextFloat()>0.7f)
-                        blocks[x][y][z] = new Block(Block.BlockType.GRASS);
-                    else if(r.nextFloat() > 0.4f)
-                        blocks[x][y][z] = new Block(Block.BlockType.DIRT);
-                    else if(r.nextFloat() > 0.2f)
-                        blocks[x][y][z] = new Block(Block.BlockType.WATER);
-                    else
-                        blocks[x][y][z] = new Block(Block.BlockType.NOT_DEFINED);
+//                    blocks[x][y][z] = new Block(
+//                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
+//                    );
+                    blocks[x][y][z] = new Block(Block.BlockType.WATER);
                 }
             }
         }
         
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
+        VBOTextureHandle = glGenBuffers();
+        
         this.startX = startX*CHUNK_SIZE;
         this.startZ = startZ*CHUNK_SIZE;
         rebuildMesh();
@@ -73,7 +88,7 @@ public class Chunk
             glBindBuffer(GL_ARRAY_BUFFER, VBOVertexHandle);
             glVertexPointer(3, GL_FLOAT, 0, 0L);
             glBindBuffer(GL_ARRAY_BUFFER, VBOColorHandle);
-            glColorPointer(4, GL_FLOAT, 0, 0L);
+            glColorPointer(3, GL_FLOAT, 0, 0L);
             glBindBuffer(GL_ARRAY_BUFFER, VBOTextureHandle);
             glBindTexture(GL_TEXTURE_2D, 1);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);
@@ -84,30 +99,31 @@ public class Chunk
     
     public void rebuildMesh()
     {
+        
+        VBOTextureHandle = glGenBuffers();
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
-        VBOTextureHandle = glGenBuffers(); // placed among the other VBOs
         
         FloatBuffer vertexPositionData = 
                 BufferUtils.createFloatBuffer(
-                (CHUNK_SIZE*CHUNK_SIZE*
+                (CHUNK_SIZE*(CHUNK_SIZE+CHUNK_H_VARIATION)*
                         CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexColorData = 
                 BufferUtils.createFloatBuffer(
-                (CHUNK_SIZE*CHUNK_SIZE*
-                        CHUNK_SIZE)*6*4*4);
+                (CHUNK_SIZE*(CHUNK_SIZE+CHUNK_H_VARIATION)*
+                        CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexTextureData = 
                 BufferUtils.createFloatBuffer(
-                        (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)*6*4*2
+                        (CHUNK_SIZE*(CHUNK_SIZE+CHUNK_H_VARIATION)*CHUNK_SIZE)*6*4*2
                 );
         
-        for(float x = 0; x < CHUNK_SIZE; x++)
+        for(int x = 0; x < CHUNK_SIZE; x++)
         {
-            for(float z = 0; z < CHUNK_SIZE; z++)
+            for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                for(float y = 0; y < CHUNK_SIZE; y++)
+                for(int y = 0; y < noise[x][z]+CHUNK_SIZE; y++)
                 {
                     // vertex data
                     vertexPositionData.put
@@ -140,9 +156,9 @@ public class Chunk
             }
         }
         
+        vertexTextureData.flip();
         vertexColorData.flip();
         vertexPositionData.flip();
-        vertexTextureData.flip();
         
         glBindBuffer(GL_ARRAY_BUFFER, VBOTextureHandle);
         glBufferData(GL_ARRAY_BUFFER, vertexTextureData,
@@ -164,26 +180,19 @@ public class Chunk
     
     private float[] getCubeColor(Block block)
     {
-        float rTop, gTop, bTop, aTop,
-             rBot, gBot, bBot, aBot,
-             rFront, gFront, bFront, aFront,
-             rBack, gBack, bBack, aBack,
-             rLeft, gLeft, bLeft, aLeft,
-             rRight, gRight, bRight, aRight;
-        
-        aTop = 1f;
-        aBot = 1f;
-        aFront = 1f;
-        aBack = 1f;
-        aLeft = 1f;
-        aRight = 1f;
+        float   rTop, gTop, bTop,
+                rBot, gBot, bBot,
+                rFront, gFront, bFront,
+                rBack, gBack, bBack,
+                rLeft, gLeft, bLeft,
+                rRight, gRight, bRight;
         
         switch(block.getType())
         {
             case GRASS:
-                rTop =      0;
-                gTop =      1;
-                bTop =      0;
+                rTop =      .34f;
+                gTop =      .78f;
+                bTop =      .236f;
                 rBot =      1;
                 gBot =      1;
                 bBot =      1;
@@ -223,24 +232,23 @@ public class Chunk
         }
          return new float[] 
          {
-             rBot, gBot, bBot, aBot,
-             rTop, gTop, bTop, aTop,
-             rFront, gFront, bFront, aFront,
-             rBack, gBack, bBack, aBack,
-             rLeft, gLeft, bLeft, aLeft,
-             rRight, gRight, bRight, aRight
+             rTop, gTop, bTop, rTop, gTop, bTop, rTop, gTop, bTop, rTop, gTop, bTop,
+             rBot, gBot, bBot, rBot, gBot, bBot, rBot, gBot, bBot, rBot, gBot, bBot,
+             rFront, gFront, bFront, rFront, gFront, bFront, rFront, gFront, bFront, rFront, gFront, bFront,
+             rBack, gBack, bBack, rBack, gBack, bBack, rBack, gBack, bBack, rBack, gBack, bBack,
+             rLeft, gLeft, bLeft, rLeft, gLeft, bLeft, rLeft, gLeft, bLeft, rLeft, gLeft, bLeft,
+             rRight, gRight, bRight, rRight, gRight, bRight, rRight, gRight, bRight, rRight, gRight, bRight,
          };
     }
     
     private float[] createCubeVertexColor(float[] cubeColorArray)
     {
-        float[] cubeColors = new float[cubeColorArray.length*4];
+        float[] cubeColors = new float[cubeColorArray.length];
         
         for(int i = 0; i < cubeColors.length; i++)
         {
             cubeColors[i] = cubeColorArray[i%cubeColorArray.length];
         }
-        
         return cubeColors;
     }
     
@@ -395,6 +403,20 @@ public class Chunk
                 leftY =     0;
                 rightX =    2;
                 rightY =    0; 
+                break;
+            case WOOD_LOG:
+                topX =      5;
+                topY =      1;
+                botX =      5;
+                botY =      1;
+                frontX =    4;
+                frontY =    1;
+                backX =     4;
+                backY =     1;
+                leftX =     4;
+                leftY =     1;
+                rightX =    4;
+                rightY =    1;
                 break;
             default:
                 topX =      3 ;

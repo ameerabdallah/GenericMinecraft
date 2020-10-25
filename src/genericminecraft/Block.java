@@ -44,8 +44,7 @@ public class Block
         BEDROCK(4),
         WATER(5),
         GRAVEL(6),
-        NOT_DEFINED(7)
-        ;
+        WOOD_LOG(7);
 
         private int BlockID;
 

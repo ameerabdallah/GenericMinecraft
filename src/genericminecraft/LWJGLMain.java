@@ -6,15 +6,16 @@
 package genericminecraft;
 
 import java.io.IOException;
+import java.util.Random;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -51,8 +52,8 @@ public class LWJGLMain {
     
     // window information
     public static final int 
-            W_WIDTH = 640,
-            W_HEIGHT = 480;
+            W_WIDTH = 1920,
+            W_HEIGHT = 1080;
     
     // movement sensativity
     private float mouseSensitivity;
@@ -67,9 +68,8 @@ public class LWJGLMain {
     
     // camera information used to transform from world space to screen space
     private Camera camera;
-//    
-//    private Chunk chunks[][];
-    private Chunk chunk;
+    
+    private Chunk chunks[][];
     
     
     // method: LWJGLMain
@@ -85,11 +85,10 @@ public class LWJGLMain {
     
     public void createChunks()
     {
-//        chunks = new Chunk[5][5];
-//        for(int x = 0; x < chunks.length; x++)
-//            for(int z = 0; z < chunks[x].length; z++ )
-//                chunks[x][z] = new Chunk(x, z);
-        chunk = new Chunk(0, 0);
+        chunks = new Chunk[5][20];
+        for(int x = 0; x < chunks.length; x++)
+            for(int z = 0; z < chunks[x].length; z++ )
+                chunks[x][z] = new Chunk(x, z, new SimplexNoise(3, 1, new Random().nextInt()));
     }
     
     // method: create
@@ -106,8 +105,8 @@ public class LWJGLMain {
         
         for(int i = 0; i < d.length; i++)
         {
-            if(d[i].getWidth() == 640
-                    && d[i].getHeight() == 480
+            if(d[i].getWidth() == W_WIDTH
+                    && d[i].getHeight() == W_HEIGHT
                     && d[i].getBitsPerPixel() == 32)
             {
                 displayMode = d[i];
@@ -211,10 +210,9 @@ public class LWJGLMain {
         glLoadIdentity();
         
         camera.lookThrough();
-//        for(int x = 0; x < chunks.length; x++)
-//            for(int z = 0; z < chunks[x].length; z++ )
-//                chunks[x][z].render
-        chunk.render();
+        for(int x = 0; x < chunks.length; x++)
+            for(int z = 0; z < chunks[x].length; z++ )
+                chunks[x][z].render();
     }
     
     // method: getDeltaTime
@@ -253,6 +251,7 @@ public class LWJGLMain {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glEnable(GL_BLEND);
         
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();
