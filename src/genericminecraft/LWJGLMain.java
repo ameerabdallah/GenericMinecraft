@@ -87,8 +87,8 @@ public class LWJGLMain {
     {
         chunks = new Chunk[5][20];
         for(int x = 0; x < chunks.length; x++)
-            for(int z = 0; z < chunks[x].length; z++ )
-                chunks[x][z] = new Chunk(x, z, new SimplexNoise(3, 1, new Random().nextInt()));
+            for(int z = 0; z < chunks[x].length; z++)
+                chunks[x][z] = new Chunk(x, z, new SimplexNoise(70, .1, 50));
     }
     
     // method: create

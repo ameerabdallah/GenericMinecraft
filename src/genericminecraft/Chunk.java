@@ -26,7 +26,7 @@ public class Chunk
     private int startX, startZ;
     private Random r;
     private SimplexNoise sNoise;
-    private double noise[][];
+    private double[][] heights;
     
     public Chunk(int startX, int startZ, SimplexNoise sNoise)
     {
@@ -48,14 +48,14 @@ public class Chunk
         CHUNK_H_VARIATION = sNoise.largestFeature;
         
         blocks = new Block[CHUNK_SIZE][CHUNK_SIZE+CHUNK_H_VARIATION][CHUNK_SIZE];
-        noise = new double[CHUNK_SIZE][CHUNK_SIZE];
+        heights = new double[CHUNK_SIZE][CHUNK_SIZE];
         
         
         for(int x = 0; x < CHUNK_SIZE; x++)
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                noise[x][z] = sNoise.getNoise(x+(startX*CHUNK_SIZE), z+(startZ*CHUNK_SIZE));
+                heights[x][z] = ((sNoise.getNoise(x+(startX*CHUNK_SIZE), z+(startZ*CHUNK_SIZE)+1)/2*(CHUNK_H_VARIATION)) + CHUNK_SIZE);
             }
         }
         
@@ -63,12 +63,12 @@ public class Chunk
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                for(int y = 0; y  < noise[x][z]+CHUNK_SIZE; y++)
+                for(int y = 0; y  < heights[x][z]; y++)
                 {
 //                    blocks[x][y][z] = new Block(
 //                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
 //                    );
-                    blocks[x][y][z] = new Block(Block.BlockType.WATER);
+                    blocks[x][y][z] = new Block(Block.BlockType.GRASS);
                 }
             }
         }
@@ -123,7 +123,7 @@ public class Chunk
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                for(int y = 0; y < noise[x][z]+CHUNK_SIZE; y++)
+                for(int y = 0; y < heights[x][z]; y++)
                 {
                     // vertex data
                     vertexPositionData.put
