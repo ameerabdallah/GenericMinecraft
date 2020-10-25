@@ -20,6 +20,7 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
@@ -78,17 +79,18 @@ public class LWJGLMain {
     {
         lastFrame = getTime();
         
-        mouseSensitivity = 0.001f;
-        moveSpeed = 0.05f;
+        mouseSensitivity = 0.0005f;
+        moveSpeed = 0.07f;
         
     }
     
     public void createChunks()
     {
-        chunks = new Chunk[5][20];
+        SimplexNoise sNoise = new SimplexNoise(70, .1, new Random().nextInt());
+        chunks = new Chunk[3][3];
         for(int x = 0; x < chunks.length; x++)
-            for(int z = 0; z < chunks[x].length; z++)
-                chunks[x][z] = new Chunk(x, z, new SimplexNoise(70, .1, 50));
+            for(int z = 0; z < chunks[0].length; z++)
+                chunks[x][z] = new Chunk(x, z, sNoise);
     }
     
     // method: create
@@ -127,7 +129,7 @@ public class LWJGLMain {
         initGL();
         
         // create camera
-        camera = new Camera(0f, 0f, -40f);
+        camera = new Camera(70f, 0f, 70f);
     }
     
     // method: destroy
@@ -236,7 +238,7 @@ public class LWJGLMain {
     // initialize openGL
     private void initGL()
     {
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.5f, 0.95f, 1.0f, 1.0f);
         
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();

@@ -37,7 +37,7 @@ public class Camera {
         iPos.y = 15f;
         iPos.z = 0.0f;
         
-        yaw = 0.0f;
+        yaw = 90f;
         pitch = 0.0f;
     }
     

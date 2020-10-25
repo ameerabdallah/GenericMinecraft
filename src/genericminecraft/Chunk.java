@@ -15,8 +15,8 @@ import org.newdawn.slick.util.ResourceLoader;
  */
 public class Chunk 
 {
-    static final int CHUNK_SIZE = 30;
-    final int CHUNK_H_VARIATION;
+    static final int CHUNK_SIZE = 7;
+    final int HEIGHT_VARIATION;
     static final int CUBE_LENGTH = 2;
     private Block[][][] blocks;
     private int VBOVertexHandle;
@@ -26,10 +26,18 @@ public class Chunk
     private int startX, startZ;
     private Random r;
     private SimplexNoise sNoise;
-    private double[][] heights;
+    private int[][] heights;
+    private int bOffsetX;
+    private int bOffsetZ;
     
     public Chunk(int startX, int startZ, SimplexNoise sNoise)
     {
+        this.startX = startX;
+        this.startZ = startZ;
+     
+        bOffsetX = startX*CHUNK_SIZE;
+        bOffsetZ = startZ*CHUNK_SIZE;
+        
         // open texture
         try
         {
@@ -45,17 +53,19 @@ public class Chunk
         this.sNoise = sNoise;
         
         r = new Random();
-        CHUNK_H_VARIATION = sNoise.largestFeature;
+        HEIGHT_VARIATION = sNoise.largestFeature;
         
-        blocks = new Block[CHUNK_SIZE][CHUNK_SIZE+CHUNK_H_VARIATION][CHUNK_SIZE];
-        heights = new double[CHUNK_SIZE][CHUNK_SIZE];
+        blocks = new Block[CHUNK_SIZE][CHUNK_SIZE+HEIGHT_VARIATION][CHUNK_SIZE];
+        heights = new int[CHUNK_SIZE][CHUNK_SIZE];
         
         
         for(int x = 0; x < CHUNK_SIZE; x++)
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                heights[x][z] = ((sNoise.getNoise(x+(startX*CHUNK_SIZE), z+(startZ*CHUNK_SIZE)+1)/2*(CHUNK_H_VARIATION)) + CHUNK_SIZE);
+                double noise = (sNoise.getNoise(x + bOffsetX, z + bOffsetZ));
+                heights[x][z] = (int) ((double)noise * HEIGHT_VARIATION) + CHUNK_SIZE; 
+                System.out.println("(" + x + ", " + heights[x][z] + ", "+ z + ")");
             }
         }
         
@@ -65,10 +75,10 @@ public class Chunk
             {
                 for(int y = 0; y  < heights[x][z]; y++)
                 {
-//                    blocks[x][y][z] = new Block(
-//                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
-//                    );
-                    blocks[x][y][z] = new Block(Block.BlockType.GRASS);
+                    blocks[x][y][z] = new Block(
+                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
+                    );
+                        
                 }
             }
         }
@@ -76,9 +86,6 @@ public class Chunk
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
         VBOTextureHandle = glGenBuffers();
-        
-        this.startX = startX*CHUNK_SIZE;
-        this.startZ = startZ*CHUNK_SIZE;
         rebuildMesh();
     }
     
@@ -105,18 +112,15 @@ public class Chunk
         VBOVertexHandle = glGenBuffers();
         
         FloatBuffer vertexPositionData = 
-                BufferUtils.createFloatBuffer(
-                (CHUNK_SIZE*(CHUNK_SIZE+CHUNK_H_VARIATION)*
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE+HEIGHT_VARIATION)*
                         CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexColorData = 
-                BufferUtils.createFloatBuffer(
-                (CHUNK_SIZE*(CHUNK_SIZE+CHUNK_H_VARIATION)*
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE+HEIGHT_VARIATION)*
                         CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexTextureData = 
-                BufferUtils.createFloatBuffer(
-                        (CHUNK_SIZE*(CHUNK_SIZE+CHUNK_H_VARIATION)*CHUNK_SIZE)*6*4*2
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE+HEIGHT_VARIATION)*CHUNK_SIZE)*6*4*2
                 );
         
         for(int x = 0; x < CHUNK_SIZE; x++)
@@ -130,9 +134,10 @@ public class Chunk
                     (
                     createCube
                     (
-                            (float)(startX + x*CUBE_LENGTH),
+                            (float)(bOffsetX*CUBE_LENGTH + x*CUBE_LENGTH),
                             (float)(y*CUBE_LENGTH),
-                            (float)(startZ + z*CUBE_LENGTH))
+                            (float)(bOffsetZ*CUBE_LENGTH + z*CUBE_LENGTH)
+                    )
                     );
                     
                     // color data
@@ -140,7 +145,7 @@ public class Chunk
                     (
                         createCubeVertexColor
                         (
-                            getCubeColor(blocks[(int)x][(int)y][(int)z])
+                            getCubeColor(blocks[x][y][z])
                         )
                     );
                     
@@ -149,7 +154,7 @@ public class Chunk
                     (
                             createTextureCube
                             (
-                                0f, 0f, blocks[(int)x][(int)y][(int)z]
+                                0f, 0f, blocks[x][y][z]
                             )
                     );
                 }
