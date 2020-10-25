@@ -20,20 +20,24 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
+import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glColor3f;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
+import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glVertex3f;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
 /***************************************************************
@@ -60,6 +64,7 @@ public class LWJGLMain {
     private float mouseSensitivity;
     private float moveSpeed;
     
+    
     // display information
     private DisplayMode displayMode;
     
@@ -69,6 +74,7 @@ public class LWJGLMain {
     
     // camera information used to transform from world space to screen space
     private Camera camera;
+    
     
     private Chunk chunks[][];
     
@@ -86,8 +92,8 @@ public class LWJGLMain {
     
     public void createChunks()
     {
-        SimplexNoise sNoise = new SimplexNoise(70, .1, new Random().nextInt());
-        chunks = new Chunk[3][3];
+        SimplexNoise sNoise = new SimplexNoise(60, .2, new Random().nextInt());
+        chunks = new Chunk[4][4];
         for(int x = 0; x < chunks.length; x++)
             for(int z = 0; z < chunks[0].length; z++)
                 chunks[x][z] = new Chunk(x, z, sNoise);
@@ -215,6 +221,7 @@ public class LWJGLMain {
         for(int x = 0; x < chunks.length; x++)
             for(int z = 0; z < chunks[x].length; z++ )
                 chunks[x][z].render();
+        
     }
     
     // method: getDeltaTime

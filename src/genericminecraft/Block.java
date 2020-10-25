@@ -37,14 +37,15 @@ public class Block
     
     public enum BlockType 
     {
-        GRASS(0),
-        DIRT(1),
-        SAND(2),
-        STONE(3),
-        BEDROCK(4),
-        WATER(5),
-        GRAVEL(6),
-        WOOD_LOG(7);
+        AIR(0),
+        GRASS(1),
+        DIRT(2),
+        SAND(3),
+        STONE(4),
+        BEDROCK(5),
+        WATER(6),
+        GRAVEL(7),
+        WOOD_LOG(8);
 
         private int BlockID;
 

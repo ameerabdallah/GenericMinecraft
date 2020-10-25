@@ -3,12 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/SimplexNoise.java</file>
-            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Block.java</file>
-            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Chunk.java</file>
-            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/SimplexNoise_octave.java</file>
-            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/GenericMinecraft.java</file>
-            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/LWJGLMain.java</file>
+            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/Block.java</file>
+            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/LWJGLMain.java</file>
+            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/GenericMinecraft.java</file>
+            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/SimplexNoise.java</file>
+            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/Chunk.java</file>
         </group>
     </open-files>
 </project-private>

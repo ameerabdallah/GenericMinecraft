@@ -15,9 +15,10 @@ import org.newdawn.slick.util.ResourceLoader;
  */
 public class Chunk 
 {
-    static final int CHUNK_SIZE = 7;
-    final int HEIGHT_VARIATION;
+    static final int CHUNK_SIZE = 30;
+    static final int CHUNK_SIZE_Y = 70;
     static final int CUBE_LENGTH = 2;
+    private final int HEIGHT_VARIATION;
     private Block[][][] blocks;
     private int VBOVertexHandle;
     private int VBOColorHandle;
@@ -27,6 +28,8 @@ public class Chunk
     private Random r;
     private SimplexNoise sNoise;
     private int[][] heights;
+    private SimplexNoise humidityNoise;
+    private double[][] humidity;
     private int bOffsetX;
     private int bOffsetZ;
     
@@ -55,19 +58,24 @@ public class Chunk
         r = new Random();
         HEIGHT_VARIATION = sNoise.largestFeature;
         
-        blocks = new Block[CHUNK_SIZE][CHUNK_SIZE+HEIGHT_VARIATION][CHUNK_SIZE];
+        humidityNoise = new SimplexNoise(70, 0.6, r.nextInt());
+        blocks = new Block[CHUNK_SIZE][CHUNK_SIZE_Y][CHUNK_SIZE];
         heights = new int[CHUNK_SIZE][CHUNK_SIZE];
+        humidity = new double[CHUNK_SIZE][CHUNK_SIZE];
         
         
         for(int x = 0; x < CHUNK_SIZE; x++)
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                double noise = (sNoise.getNoise(x + bOffsetX, z + bOffsetZ));
-                heights[x][z] = (int) ((double)noise * HEIGHT_VARIATION) + CHUNK_SIZE; 
-                System.out.println("(" + x + ", " + heights[x][z] + ", "+ z + ")");
+                double noise = (sNoise.getNoise(x + bOffsetX, z + bOffsetZ) + 1)/2;
+                heights[x][z] = CHUNK_SIZE_Y - (int) (noise * HEIGHT_VARIATION);
+                noise = (humidityNoise.getNoise(x+bOffsetX, z+bOffsetZ) + 1) / 2 ;
+                humidity[x][z] = noise;
+                System.out.println(humidity[x][z]);
             }
         }
+        
         
         for(int x = 0; x < CHUNK_SIZE; x++)
         {
@@ -75,9 +83,27 @@ public class Chunk
             {
                 for(int y = 0; y  < heights[x][z]; y++)
                 {
-                    blocks[x][y][z] = new Block(
-                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
-                    );
+//                    blocks[x][y][z] = new Block(
+//                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
+//                    );
+                    if(y == heights[x][z]-1)
+                    {
+                        if(y < 37)
+                            blocks[x][y][z] = new Block(Block.BlockType.WATER);
+                        else
+                        {
+                            if (humidity[x][z] < 0.3f)
+                                blocks[x][y][z] = new Block(Block.BlockType.SAND);
+                            else
+                                blocks[x][y][z] = new Block(Block.BlockType.GRASS);
+                        }
+                    }
+                    else if(y > 20)
+                        blocks[x][y][z] = new Block(Block.BlockType.DIRT);
+                    else if(y > 0)
+                        blocks[x][y][z] = new Block(Block.BlockType.STONE);
+                    else
+                        blocks[x][y][z] = new Block(Block.BlockType.BEDROCK);
                         
                 }
             }
@@ -100,7 +126,7 @@ public class Chunk
             glBindTexture(GL_TEXTURE_2D, 1);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);
             glDrawArrays(GL_QUADS, 0,
-                        CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE*24);
+                        CHUNK_SIZE*CHUNK_SIZE_Y*CHUNK_SIZE*24);
         glPopMatrix();
     }
     
@@ -112,15 +138,15 @@ public class Chunk
         VBOVertexHandle = glGenBuffers();
         
         FloatBuffer vertexPositionData = 
-                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE+HEIGHT_VARIATION)*
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE_Y)*
                         CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexColorData = 
-                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE+HEIGHT_VARIATION)*
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE_Y)*
                         CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexTextureData = 
-                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE+HEIGHT_VARIATION)*CHUNK_SIZE)*6*4*2
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE_Y)*CHUNK_SIZE)*6*4*2
                 );
         
         for(int x = 0; x < CHUNK_SIZE; x++)
