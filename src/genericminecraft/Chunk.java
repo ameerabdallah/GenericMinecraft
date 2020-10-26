@@ -18,7 +18,7 @@ public class Chunk
     static final int CHUNK_SIZE = 30;
     static final int CHUNK_SIZE_Y = 70;
     static final int CUBE_LENGTH = 2;
-    private final int HEIGHT_VARIATION;
+    static final int HEIGHT_VARIATION = 60;
     private Block[][][] blocks;
     private int VBOVertexHandle;
     private int VBOColorHandle;
@@ -33,7 +33,7 @@ public class Chunk
     private int bOffsetX;
     private int bOffsetZ;
     
-    public Chunk(int startX, int startZ, SimplexNoise sNoise)
+    public Chunk(int startX, int startZ, SimplexNoise sNoise, SimplexNoise humidityNoise)
     {
         this.startX = startX;
         this.startZ = startZ;
@@ -56,9 +56,8 @@ public class Chunk
         this.sNoise = sNoise;
         
         r = new Random();
-        HEIGHT_VARIATION = sNoise.largestFeature;
         
-        humidityNoise = new SimplexNoise(70, 0.6, r.nextInt());
+        this.humidityNoise = humidityNoise;
         blocks = new Block[CHUNK_SIZE][CHUNK_SIZE_Y][CHUNK_SIZE];
         heights = new int[CHUNK_SIZE][CHUNK_SIZE];
         humidity = new double[CHUNK_SIZE][CHUNK_SIZE];
@@ -72,7 +71,6 @@ public class Chunk
                 heights[x][z] = CHUNK_SIZE_Y - (int) (noise * HEIGHT_VARIATION);
                 noise = (humidityNoise.getNoise(x+bOffsetX, z+bOffsetZ) + 1) / 2 ;
                 humidity[x][z] = noise;
-                System.out.println(humidity[x][z]);
             }
         }
         
@@ -83,9 +81,6 @@ public class Chunk
             {
                 for(int y = 0; y  < heights[x][z]; y++)
                 {
-//                    blocks[x][y][z] = new Block(
-//                            Block.BlockType.values()[r.nextInt(Block.BlockType.values().length)]
-//                    );
                     if(y == heights[x][z]-1)
                     {
                         if(y < 37)
@@ -132,7 +127,6 @@ public class Chunk
     
     public void rebuildMesh()
     {
-        
         VBOTextureHandle = glGenBuffers();
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
@@ -169,10 +163,7 @@ public class Chunk
                     // color data
                     vertexColorData.put
                     (
-                        createCubeVertexColor
-                        (
-                            getCubeColor(blocks[x][y][z])
-                        )
+                        createCubeVertexColor(blocks[x][y][z])
                     );
                     
                     // texture data
@@ -209,7 +200,7 @@ public class Chunk
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     
-    private float[] getCubeColor(Block block)
+    private float[] createCubeVertexColor(Block block)
     {
         float   rTop, gTop, bTop,
                 rBot, gBot, bBot,
@@ -261,6 +252,7 @@ public class Chunk
                 bRight =    1;
                 break;
         }
+        // return the color values for each vertex of the cube
          return new float[] 
          {
              rTop, gTop, bTop, rTop, gTop, bTop, rTop, gTop, bTop, rTop, gTop, bTop,
@@ -272,23 +264,11 @@ public class Chunk
          };
     }
     
-    private float[] createCubeVertexColor(float[] cubeColorArray)
-    {
-        float[] cubeColors = new float[cubeColorArray.length];
-        
-        for(int i = 0; i < cubeColors.length; i++)
-        {
-            cubeColors[i] = cubeColorArray[i%cubeColorArray.length];
-        }
-        return cubeColors;
-    }
-    
     private float[] createCube(float x, float y, float z)
     {
         int offset = CUBE_LENGTH / 2;
         
-        // vertices are relative to the center of the cube
-        
+        // Create Cube vertices relative to the center of the cube
         return new float[]
         {
             // TOP QUAD

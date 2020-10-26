@@ -53,9 +53,9 @@ public class Camera {
     // -89 degress < pitch < 89 degrees
     public void pitch(float n)
     {
-        if(pitch > 89.0f) pitch = 89.0f;
-        if(pitch < -89.0f) pitch  = -89.0f;
         pitch -= n;
+        if(pitch > 89.0f) pitch = 89.0f;
+        else if(pitch < -89.0f) pitch  = -89.0f;
     }
     
     // method: walkForward
@@ -119,5 +119,10 @@ public class Camera {
         glRotatef(pitch, 1.0f, 0.0f, 0.0f);
         glRotatef(yaw, 0.0f, 1.0f, 0.0f);
         glTranslatef(pos.x, pos.y, pos.z);
+    }
+    
+    public Vector3f getPos()
+    {
+        return pos;
     }
 }
