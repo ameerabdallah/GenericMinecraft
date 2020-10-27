@@ -3,12 +3,11 @@ package genericminecraft;
 import java.io.IOException;
 import java.util.Random;
 import org.lwjgl.LWJGLException;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
-import static org.lwjgl.opengl.GL11.GL_BLEND;
+import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
@@ -50,8 +49,8 @@ public class LWJGLMain {
     
     // window information
     public static final int 
-            W_WIDTH = 1280,
-            W_HEIGHT = 720;
+            W_WIDTH = 640,
+            W_HEIGHT = 480;
     
     // movement sensativity
     private float mouseSensitivity;
@@ -68,7 +67,7 @@ public class LWJGLMain {
     // camera information used to transform from world space to screen space
     private Camera camera;
     
-    
+    // chunks
     private Chunk chunks[][];
     
     
@@ -81,8 +80,11 @@ public class LWJGLMain {
         mouseSensitivity = 0.005f;
         moveSpeed = 0.07f;
         iteration = 0;
+        
     }
     
+    // method: createChunks()
+    // fill the array 'chunks' with chunks relative to each other based on indices
     public void createChunks()
     {
         SimplexNoise sNoise = new SimplexNoise(190, .4, new Random().nextInt());
@@ -129,7 +131,7 @@ public class LWJGLMain {
         // OpenGL Code
         initGL();
         
-        // create camera0
+        // create camera
         camera = new Camera(50f, -90f, -30f);
     }
     
@@ -211,17 +213,17 @@ public class LWJGLMain {
                 }
             }
             
-            
             Display.update();
             Display.sync(60);
+            
+            if(iteration%100 == 0)
+                System.out.println(deltaTime+" ms per iteration");
             iteration++;
-            if(iteration%20 == 0)
-            {
-                System.out.println(deltaTime);
-            }
         }
     }
     
+    // method: render()
+    // render the chunks and perform matrix operations
     private void render()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -274,10 +276,6 @@ public class LWJGLMain {
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        
-        glCullFace(GL_FRONT);
-        glEnable(GL_CULL_FACE);
         
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();

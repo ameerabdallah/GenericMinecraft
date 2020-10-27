@@ -9,30 +9,56 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
-/**
- *
- * @author ameer
- */
+/***************************************************************
+* @file: Chunk.java
+* @author: Ameer Abdallah
+* @class: CS 4450 - Computer Graphics
+* 
+* @assignment: Checkpoint 2
+* @date last modified: 10/26/2020
+*
+* @purpose: 
+* Manages the rendering of a chunk object and the blocks that the chunk consists
+* of. Manages the vertex buffer objects for vertex, color and texture data.
+****************************************************************/ 
 public class Chunk 
 {
     static final int CHUNK_SIZE = 30;
     static final int CHUNK_SIZE_Y = 70;
     static final int CUBE_LENGTH = 2;
-    static final int HEIGHT_VARIATION = 60;
+    
+    // This is the multiplier for the height map generated with noise
+    static final int HEIGHT_VARIATION = 60; 
+    
+    // 3D Array of blocks that are inside the chunk
     private Block[][][] blocks;
+    
+    // VBO Handles
     private int VBOVertexHandle;
     private int VBOColorHandle;
     private int VBOTextureHandle;
+    
     private Texture texture;
+    
+    // startX
     private int startX, startZ;
     private Random r;
+    
+    // Simplex noise for height map
     private SimplexNoise sNoise;
-    private int[][] heights;
     private SimplexNoise humidityNoise;
+    
+    // height map for terrain generation
+    private int[][] heights;
     private double[][] humidity;
+    
+    // where the chunk is relative to the blocks from other chunks
     private int bOffsetX;
     private int bOffsetZ;
     
+    
+    // method: Chunk()
+    // purpose: Generate chunk and set up rebuildMesh at the end
     public Chunk(int startX, int startZ, SimplexNoise sNoise, SimplexNoise humidityNoise)
     {
         this.startX = startX;
@@ -79,9 +105,11 @@ public class Chunk
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                for(int y = 0; y  < heights[x][z]; y++)
+                for(int y = 0; y  <CHUNK_SIZE_Y; y++)
                 {
-                    if(y == heights[x][z]-1)
+                    if(y >= heights[x][z])
+                        blocks[x][y][z] = new Block(Block.BlockType.AIR);
+                    else if(y == heights[x][z]-1)
                     {
                         if(y < 37)
                             blocks[x][y][z] = new Block(Block.BlockType.WATER);
@@ -110,6 +138,8 @@ public class Chunk
         rebuildMesh();
     }
     
+    // method: render()
+    // purpose: render meshes
     public void render()
     {
         glPushMatrix();
@@ -124,7 +154,8 @@ public class Chunk
                         CHUNK_SIZE*CHUNK_SIZE_Y*CHUNK_SIZE*24);
         glPopMatrix();
     }
-    
+    // method: rebuildMesh()
+    // purpose: rebuild the mesh based on the current position of blocks in the chunk
     public void rebuildMesh()
     {
         VBOTextureHandle = glGenBuffers();
@@ -147,18 +178,10 @@ public class Chunk
         {
             for(int z = 0; z < CHUNK_SIZE; z++)
             {
-                for(int y = 0; y < heights[x][z]; y++)
+                for(int y = 0; y < CHUNK_SIZE_Y; y++)
                 {
                     // vertex data
-                    vertexPositionData.put
-                    (
-                    createCube
-                    (
-                            (float)(bOffsetX*CUBE_LENGTH + x*CUBE_LENGTH),
-                            (float)(y*CUBE_LENGTH),
-                            (float)(bOffsetZ*CUBE_LENGTH + z*CUBE_LENGTH)
-                    )
-                    );
+                    vertexPositionData.put(createCube(x, y, z));
                     
                     // color data
                     vertexColorData.put
@@ -200,6 +223,8 @@ public class Chunk
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     
+    // method: createCubeVertexColor()
+    // Create the colors for each vertex of the cube
     private float[] createCubeVertexColor(Block block)
     {
         float   rTop, gTop, bTop,
@@ -211,6 +236,8 @@ public class Chunk
         
         switch(block.getType())
         {
+            case AIR:
+                return new float[] {};
             case GRASS:
                 rTop =      .34f;
                 gTop =      .78f;
@@ -264,9 +291,26 @@ public class Chunk
          };
     }
     
+    
+    // method: createCube()
+    // create the vertices relative to the center of the cube, the position is given
+    // through the parameters and is the position of the center of the cube
     private float[] createCube(float x, float y, float z)
     {
+        int iX = (int)x, iY = (int)y, iZ = (int)z;
         int offset = CUBE_LENGTH / 2;
+        
+        switch(blocks[iX][iY][iZ].getType())
+        {
+            case AIR:
+                return new float[] {};
+            default:
+                break;
+        }
+            
+        x = (x+bOffsetX)*CUBE_LENGTH;
+        y = y*CUBE_LENGTH;
+        z = (z+bOffsetZ)*CUBE_LENGTH;
         
         // Create Cube vertices relative to the center of the cube
         return new float[]
@@ -304,6 +348,8 @@ public class Chunk
         };
     }
 
+    // method: getTextureCube()
+    // purpose: maps texture to cube based on block.getType()
     private float[] createTextureCube(float x, float y, Block block) 
     {
         float topX, topY;
@@ -317,6 +363,8 @@ public class Chunk
                 
         switch(block.getType())
         {
+            case AIR:
+                return new float[]{};
             case WATER:
                 topX =      13;
                 topY =      12;
@@ -429,7 +477,7 @@ public class Chunk
                 rightX =    4;
                 rightY =    1;
                 break;
-            default:
+            default: // this maps to the missing texture
                 topX =      3 ;
                 topY =      13;
                 botX =      3 ;

@@ -14,7 +14,7 @@ import org.lwjgl.util.vector.Vector3f;
 * @author: Ameer Abdallah
 * @class: CS 4450 - Computer Graphics
 * 
-* @assignment: Checkpoint 1
+* @assignment: Checkpoint 2
 * @date last modified: 10/12/2020
 *
 * @purpose: 
