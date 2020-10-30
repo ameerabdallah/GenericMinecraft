@@ -7,7 +7,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
@@ -49,8 +48,8 @@ public class LWJGLMain {
     
     // window information
     public static final int 
-            W_WIDTH = 640,
-            W_HEIGHT = 480;
+            W_WIDTH = 1920,
+            W_HEIGHT = 1080;
     
     // movement sensativity
     private float mouseSensitivity;
@@ -71,6 +70,7 @@ public class LWJGLMain {
     private Chunk chunks[][];
     
     
+    
     // method: LWJGLMain
     // initialize information
     public LWJGLMain() throws IOException
@@ -87,10 +87,11 @@ public class LWJGLMain {
     // fill the array 'chunks' with chunks relative to each other based on indices
     public void createChunks()
     {
-        SimplexNoise sNoise = new SimplexNoise(190, .4, new Random().nextInt());
-        SimplexNoise humidityNoise = new SimplexNoise(150, 0.55, new Random().nextInt());
+        SimplexNoise sNoise = new SimplexNoise(50, .2, new Random().nextInt());
+        SimplexNoise humidityNoise = new SimplexNoise(150, 0.1, new Random().nextInt());
+        SimplexNoise caveNoise = new SimplexNoise(5, 0.3, new Random().nextInt());
         
-        chunks = new Chunk[2][2];
+        chunks = new Chunk[4][4];
         for(int x = 0; x < chunks.length; x++)
             for(int z = 0; z < chunks[0].length; z++)
                 chunks[x][z] = new Chunk(x, z, sNoise, humidityNoise);
@@ -276,6 +277,8 @@ public class LWJGLMain {
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
         
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();

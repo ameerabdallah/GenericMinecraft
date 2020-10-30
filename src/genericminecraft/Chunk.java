@@ -26,7 +26,6 @@ public class Chunk
     static final int CHUNK_SIZE = 30;
     static final int CHUNK_SIZE_Y = 70;
     static final int CUBE_LENGTH = 2;
-    
     // This is the multiplier for the height map generated with noise
     static final int HEIGHT_VARIATION = 60; 
     
@@ -40,8 +39,7 @@ public class Chunk
     
     private Texture texture;
     
-    // startX
-    private int startX, startZ;
+    private int chunkX, chunkZ;
     private Random r;
     
     // Simplex noise for height map
@@ -50,6 +48,7 @@ public class Chunk
     
     // height map for terrain generation
     private int[][] heights;
+    private int[][][] caves;
     private double[][] humidity;
     
     // where the chunk is relative to the blocks from other chunks
@@ -59,25 +58,29 @@ public class Chunk
     
     // method: Chunk()
     // purpose: Generate chunk and set up rebuildMesh at the end
-    public Chunk(int startX, int startZ, SimplexNoise sNoise, SimplexNoise humidityNoise)
+    public Chunk(int chunkX, int chunkZ, SimplexNoise sNoise, SimplexNoise humidityNoise)
     {
-        this.startX = startX;
-        this.startZ = startZ;
+        boolean fillWater = false;
+        this.chunkX = chunkX;
+        this.chunkZ = chunkZ;
      
-        bOffsetX = startX*CHUNK_SIZE;
-        bOffsetZ = startZ*CHUNK_SIZE;
+        bOffsetX = chunkX*CHUNK_SIZE;
+        bOffsetZ = chunkZ*CHUNK_SIZE;
         
-        // open texture
+        // open and generate texture
+        
         try
         {
             texture = TextureLoader.getTexture("PNG",
                     ResourceLoader.getResourceAsStream("terrain.png"));
+            
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
-        texture.hasAlpha();
+        texture.bind();
+        texture.setTextureFilter(GL_NEAREST);
         
         this.sNoise = sNoise;
         
@@ -107,34 +110,44 @@ public class Chunk
             {
                 for(int y = 0; y  <CHUNK_SIZE_Y; y++)
                 {
+                    
                     if(y >= heights[x][z])
+                    {
+                        if(fillWater && y < 37)
+                            blocks[x][y][z] = new Block(Block.BlockType.WATER);
+                        else
                         blocks[x][y][z] = new Block(Block.BlockType.AIR);
+                    }
                     else if(y == heights[x][z]-1)
                     {
                         if(y < 37)
+                        {
+                            fillWater = true;
                             blocks[x][y][z] = new Block(Block.BlockType.WATER);
+                        }
                         else
                         {
-                            if (humidity[x][z] < 0.3f)
+                            if ( humidity[x][z] < 0.3f )
                                 blocks[x][y][z] = new Block(Block.BlockType.SAND);
                             else
                                 blocks[x][y][z] = new Block(Block.BlockType.GRASS);
                         }
                     }
-                    else if(y > 20)
+                    else if(y > 30)
                         blocks[x][y][z] = new Block(Block.BlockType.DIRT);
                     else if(y > 0)
                         blocks[x][y][z] = new Block(Block.BlockType.STONE);
-                    else
+                    else 
                         blocks[x][y][z] = new Block(Block.BlockType.BEDROCK);
-                        
                 }
             }
+            
+                fillWater = false;
         }
         
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
-        VBOTextureHandle = glGenBuffers();
+        VBOTextureHandle = glGenTextures();
         rebuildMesh();
     }
     
@@ -180,23 +193,28 @@ public class Chunk
             {
                 for(int y = 0; y < CHUNK_SIZE_Y; y++)
                 {
-                    // vertex data
-                    vertexPositionData.put(createCube(x, y, z));
                     
-                    // color data
-                    vertexColorData.put
-                    (
-                        createCubeVertexColor(blocks[x][y][z])
-                    );
-                    
-                    // texture data
-                    vertexTextureData.put
-                    (
-                            createTextureCube
-                            (
-                                0f, 0f, blocks[x][y][z]
-                            )
-                    );
+                    if(blocks[x][y][z].getType() != Block.BlockType.AIR)
+                    {
+                        
+                        // vertex data
+                        vertexPositionData.put(createCube(x, y, z));
+
+                        // color data
+                        vertexColorData.put
+                        (
+                            createCubeVertexColor(blocks[x][y][z])
+                        );
+
+                        // texture data
+                        vertexTextureData.put
+                        (
+                                createTextureCube
+                                (
+                                    0f, 0f, blocks[x][y][z]
+                                )
+                        );
+                    }
                 }
             }
         }
@@ -359,8 +377,8 @@ public class Chunk
         float leftX, leftY;
         float rightX, rightY;
         
-        float offset = (1024f/16)/1024;
-                
+        float offset = 1f/16f;
+        
         switch(block.getType())
         {
             case AIR:
@@ -492,6 +510,7 @@ public class Chunk
                 rightY =    13; 
                 break;
         }
+        
          return new float[] {
             // TOP
             x + offset*(topX+1), y + offset*(topY+1),
