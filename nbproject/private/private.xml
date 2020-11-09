@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="1">
+        <file>
+            <url>src/genericminecraft/LWJGLMain.java</url>
+            <bookmark id="1">
+                <name/>
+                <line>292</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/Camera.java</file>
-            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/Block.java</file>
-            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/LWJGLMain.java</file>
-            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/GenericMinecraft.java</file>
-            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/SimplexNoise.java</file>
-            <file>file:/C:/Users/ameer/Desktop/GenericMinecraft/GenericMinecraft/src/genericminecraft/Chunk.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Block.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Camera.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Chunk.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/World.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/GenericMinecraft.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/LWJGLMain.java</file>
         </group>
     </open-files>
 </project-private>

@@ -1,23 +1,31 @@
 package genericminecraft;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.Random;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import static org.lwjgl.opengl.GL11.GL_AMBIENT;
 import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_COLOR_MATERIAL;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_DIFFUSE;
 import static org.lwjgl.opengl.GL11.GL_FRONT;
+import static org.lwjgl.opengl.GL11.GL_LIGHT0;
+import static org.lwjgl.opengl.GL11.GL_LIGHTING;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
 import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_SPECULAR;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
@@ -27,8 +35,10 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
 import static org.lwjgl.opengl.GL11.glFlush;
 import static org.lwjgl.opengl.GL11.glHint;
+import static org.lwjgl.opengl.GL11.glLight;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glOrtho;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
@@ -51,10 +61,15 @@ public class LWJGLMain {
             W_WIDTH = 1920,
             W_HEIGHT = 1080;
     
+    private FloatBuffer diffuseWhiteLight;
+    private FloatBuffer specularWhiteLight;
+    private FloatBuffer ambientWhiteLight;
+    
     // movement sensativity
     private float mouseSensitivity;
     private float moveSpeed;
     private int iteration;
+    private int seed;
     
     // display information
     private DisplayMode displayMode;
@@ -65,11 +80,10 @@ public class LWJGLMain {
     
     // camera information used to transform from world space to screen space
     private Camera camera;
+    private Random r;
     
-    // chunks
-    private Chunk chunks[][];
-    
-    
+    // World
+    private World world;
     
     // method: LWJGLMain
     // initialize information
@@ -80,21 +94,9 @@ public class LWJGLMain {
         mouseSensitivity = 0.005f;
         moveSpeed = 0.07f;
         iteration = 0;
+        seed = new Random().nextInt();
+        r = new Random(seed);
         
-    }
-    
-    // method: createChunks()
-    // fill the array 'chunks' with chunks relative to each other based on indices
-    public void createChunks()
-    {
-        SimplexNoise sNoise = new SimplexNoise(50, .2, new Random().nextInt());
-        SimplexNoise humidityNoise = new SimplexNoise(150, 0.1, new Random().nextInt());
-        SimplexNoise caveNoise = new SimplexNoise(5, 0.3, new Random().nextInt());
-        
-        chunks = new Chunk[4][4];
-        for(int x = 0; x < chunks.length; x++)
-            for(int z = 0; z < chunks[0].length; z++)
-                chunks[x][z] = new Chunk(x, z, sNoise, humidityNoise);
     }
     
     // method: create
@@ -133,7 +135,11 @@ public class LWJGLMain {
         initGL();
         
         // create camera
-        camera = new Camera(50f, -90f, -30f);
+        camera = new Camera(0f, -90f, 0f);
+        
+        world = new World();
+        
+        System.out.println(Chunk.timer);
     }
     
     // method: destroy
@@ -218,7 +224,7 @@ public class LWJGLMain {
             Display.sync(60);
             
             if(iteration%100 == 0)
-                System.out.println(deltaTime+" ms per iteration");
+                System.out.println(deltaTime+" ms per loop");
             iteration++;
         }
     }
@@ -233,9 +239,8 @@ public class LWJGLMain {
         glLoadIdentity();
         
         camera.lookThrough();
-        for(int x = 0; x < chunks.length; x++)
-            for(int z = 0; z < chunks[x].length; z++ )
-                chunks[x][z].render();
+        
+        world.render();
         
         glFlush();
     }
@@ -258,6 +263,17 @@ public class LWJGLMain {
         return System.nanoTime();
     }
     
+    private void initLightArrays()
+    {
+        diffuseWhiteLight  = BufferUtils.createFloatBuffer(4);
+        specularWhiteLight  = BufferUtils.createFloatBuffer(4);
+        ambientWhiteLight  = BufferUtils.createFloatBuffer(4);
+        
+        diffuseWhiteLight.put(new float[]{1f, 1f, 1f, 0.0f}).flip();
+        specularWhiteLight.put(new float[]{.5f, .5f, .5f, 0.0f}).flip();
+        ambientWhiteLight.put(new float[]{.25f, .25f, .25f, 0.0f}).flip();
+    }
+    
     // method: initGL
     // initialize openGL
     private void initGL()
@@ -266,8 +282,8 @@ public class LWJGLMain {
         
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(100.f, (float)displayMode.getWidth()/(float)displayMode.getHeight(),
-                0.1f, 300.0f);
+        gluPerspective(90f, (float)displayMode.getWidth()/(float)displayMode.getHeight(),
+                0.1f, 500.0f);
         glPushMatrix();
         
         glMatrixMode(GL_MODELVIEW);
@@ -278,12 +294,22 @@ public class LWJGLMain {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_CULL_FACE);
+        glEnable(GL_COLOR_MATERIAL);
         glCullFace(GL_FRONT);
         
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
         glLoadIdentity();
         glPushMatrix();
+        
+        initLightArrays();
+        glLight(GL_LIGHT0, GL_SPECULAR, specularWhiteLight);
+        glLight(GL_LIGHT0, GL_DIFFUSE, diffuseWhiteLight);
+        glLight(GL_LIGHT0, GL_AMBIENT, ambientWhiteLight);
+        
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        
+        
     }
-    
     
 }

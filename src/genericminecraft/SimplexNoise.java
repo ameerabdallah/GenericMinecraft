@@ -7,9 +7,9 @@ public class SimplexNoise {
     SimplexNoise_octave[] octaves;
     double[] frequencys;
     double[] amplitudes;
-
-    int largestFeature;
     double persistence;
+    
+    int largestFeature;
     int seed;
 
     public SimplexNoise(int largestFeature,double persistence, int seed){

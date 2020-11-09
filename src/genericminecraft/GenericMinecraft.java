@@ -22,7 +22,6 @@ public class GenericMinecraft {
         {
             main = new LWJGLMain();
             main.create();
-            main.createChunks();
             main.run();
         }
         catch(Exception ex)

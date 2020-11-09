@@ -5,6 +5,13 @@
  */
 package genericminecraft;
 
+import java.nio.FloatBuffer;
+import org.lwjgl.BufferUtils;
+import static org.lwjgl.opengl.GL11.GL_LIGHT0;
+import static org.lwjgl.opengl.GL11.GL_POSITION;
+import static org.lwjgl.opengl.GL11.glLight;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import org.lwjgl.util.vector.Vector3f;
@@ -23,22 +30,25 @@ import org.lwjgl.util.vector.Vector3f;
 ****************************************************************/ 
 public class Camera {
     private Vector3f pos;
-    private Vector3f iPos;
+    private Vector3f lPos;
     private float yaw;
     private float pitch;
+    
+    
     
     // method: Camera
     // construct a Camera object
     public Camera(float x, float y, float z)
     {
         pos = new Vector3f(x, y, z);
-        iPos = new Vector3f(x, y, z);
-        iPos.x = 0.0f;
-        iPos.y = 15f;
-        iPos.z = 0.0f;
+        lPos = new Vector3f(x, y, z);
+        lPos.x = (4*Chunk.CUBE_LENGTH*Chunk.CHUNK_SIZE)/2f;
+        lPos.y = 150.0f;
+        lPos.z = (4*Chunk.CUBE_LENGTH*Chunk.CHUNK_SIZE)/2f;
         
-        yaw = 90f;
+        yaw = 180f;
         pitch = 0.0f;
+        
     }
     
     // method: yaw
@@ -119,6 +129,10 @@ public class Camera {
         glRotatef(pitch, 1.0f, 0.0f, 0.0f);
         glRotatef(yaw, 0.0f, 1.0f, 0.0f);
         glTranslatef(pos.x, pos.y, pos.z);
+        
+        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
+        lightPosition.put(new float[]{lPos.x, lPos.y, lPos.z, 1.0f}).flip();
+        glLight(GL_LIGHT0, GL_POSITION, lightPosition);
     }
     
     public Vector3f getPos()
