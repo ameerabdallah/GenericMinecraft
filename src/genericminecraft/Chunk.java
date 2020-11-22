@@ -15,8 +15,8 @@ import org.newdawn.slick.util.ResourceLoader;
 * @author: Ameer Abdallah
 * @class: CS 4450 - Computer Graphics
 * 
-* @assignment: Checkpoint 2
-* @date last modified: 10/26/2020
+* @assignment: Checkpoint 3
+* @date last modified: 10/30/2020
 *
 * @purpose: 
 * Manages the rendering of a chunk object and the blocks that the chunk consists
@@ -258,8 +258,8 @@ public class Chunk
                         CHUNK_SIZE)*6*4*3);
         
         FloatBuffer vertexTextureData = 
-                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE_Y)*CHUNK_SIZE)*6*4*2
-                );
+                BufferUtils.createFloatBuffer((CHUNK_SIZE*(CHUNK_SIZE_Y)*
+                        CHUNK_SIZE)*6*4*2);
         
         for(int x = 0; x < CHUNK_SIZE; x++)
         {
@@ -274,7 +274,6 @@ public class Chunk
                     vertexColorData,
                     vertexTextureData
                     );
-
                 }
             }
         }
@@ -305,7 +304,6 @@ public class Chunk
     }
     
     // method: createCubeData
-    
     private void createCubeData(int x, int y, int z, FloatBuffer vertexPositionData, FloatBuffer vertexColorData, FloatBuffer vertexTextureData)
     {
         Block block  = blocks[x][y][z];
@@ -616,6 +614,7 @@ public class Chunk
         
     }
     
+    // gets block from chunk space
     public Block getBlock(int x, int y, int z)
     {
         return blocks[x][y][z];
@@ -663,6 +662,5 @@ public class Chunk
         
         return chunk.CHUNK_X == CHUNK_X && chunk.CHUNK_Z == CHUNK_Z;
     }
-    
     
 }

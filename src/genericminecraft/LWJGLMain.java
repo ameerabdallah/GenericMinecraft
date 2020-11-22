@@ -17,9 +17,12 @@ import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_DIFFUSE;
+import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FRONT;
+import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_LIGHT0;
 import static org.lwjgl.opengl.GL11.GL_LIGHTING;
+import static org.lwjgl.opengl.GL11.GL_LINE;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
 import static org.lwjgl.opengl.GL11.GL_NICEST;
@@ -31,6 +34,7 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
 import static org.lwjgl.opengl.GL11.glFlush;
@@ -38,7 +42,7 @@ import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLight;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
-import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
@@ -47,8 +51,8 @@ import static org.lwjgl.util.glu.GLU.gluPerspective;
 * @author: Ameer Abdallah
 * @class: CS 4450 - Computer Graphics
 * 
-* @assignment: Checkpoint 2
-* @date last modified: 10/25/2020
+* @assignment: Checkpoint 3
+* @date last modified: 11/08/2020
 *
 * @purpose: 
 * Create a randomly generated world using simplex noise while utilizing multiple
@@ -65,6 +69,7 @@ public class LWJGLMain {
     private FloatBuffer specularWhiteLight;
     private FloatBuffer ambientWhiteLight;
     
+    // player information
     // movement sensativity
     private float mouseSensitivity;
     private float moveSpeed;
@@ -76,10 +81,10 @@ public class LWJGLMain {
     
     // timing information
     private long lastFrame;
-    private long deltaTime;
+    private long dt;
     
     // camera information used to transform from world space to screen space
-    private Camera camera;
+    private Player player;
     private Random r;
     
     // World
@@ -135,9 +140,9 @@ public class LWJGLMain {
         initGL();
         
         // create camera
-        camera = new Camera(0f, -90f, 0f);
+        player = new Player(10f, 90f, -10f);
         
-        world = new World();
+        world = new World(player);
         
         System.out.println(Chunk.timer);
     }
@@ -155,32 +160,60 @@ public class LWJGLMain {
     // make changes to the program based on keyboard input
     private void processKeyboard()
     {
-        float v = moveSpeed*(float)deltaTime;
-        
-        
+        if (Keyboard.isKeyDown(Keyboard.KEY_F1)) 
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDisable(GL_TEXTURE_2D);
+        }
+
+        if (Keyboard.isKeyDown(Keyboard.KEY_F2)) 
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glEnable(GL_TEXTURE_2D);
+        }
         if(Keyboard.isKeyDown(Keyboard.KEY_D)) 
         {
-            camera.strafeRight(v);
+            player.updateVelocityRight(dt);
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_A)) 
         {
-            camera.strafeLeft(v);
+            player.updateVelocityLeft(dt);
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_F))
+        {
+            player.setFlying(player.isFlying() ? false : true);
+            player.getVelocity().y = 0;
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)) 
         {
-            camera.moveUp(v);
+            if(player.isFlying())
+                player.updateVelocityFlying(dt);
+            else
+            {
+                float pX = player.getPosInBlockSpace().x;
+                float pY = player.getPosInBlockSpace().y;
+                float pZ = player.getPosInBlockSpace().z;
+                float pH = Player.PLAYER_SIZE_Y/4f;
+                
+                if( world.getBlock((int)pX, (int)(pY-pH*2), (int)pZ) != null )
+                {
+                    if(world.isPlayerCollidingWithBlock((int)pX, (int)(pY-pH*2), (int)pZ))
+                        player.updateVelocityJump(dt);
+                }
+            }
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) 
         {
-            camera.moveDown(v);
+            if(player.isFlying())
+                player.updateVelocityDropping(dt);
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_W)) 
         {
-            camera.walkForward(v);
+            player.updateVelocityForward(dt);
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_S)) 
         {
-            camera.walkBackward(v);
+            player.updateVelocityBackward(dt);
         }
     }
     
@@ -191,8 +224,8 @@ public class LWJGLMain {
         float dx = Mouse.getX() - (W_WIDTH/2);
         float dy = Mouse.getY() - (W_HEIGHT/2);
         
-        camera.yaw(dx * mouseSensitivity * (float)deltaTime);
-        camera.pitch(dy * mouseSensitivity * (float)deltaTime);
+        player.getCamera().yaw(dx * mouseSensitivity * (float)dt);
+        player.getCamera().pitch(dy * mouseSensitivity * (float)dt);
         
         Mouse.setCursorPosition(W_WIDTH/2, W_HEIGHT/2);
     }
@@ -203,7 +236,7 @@ public class LWJGLMain {
     {
         while(!Display.isCloseRequested() && !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
         {
-            deltaTime = getDeltaTime();
+            dt = getDeltaTime();
             if(Display.isVisible())
             {
                 Mouse.setGrabbed(true);
@@ -220,12 +253,28 @@ public class LWJGLMain {
                 }
             }
             
+            if(iteration%100 == 0)
+            {
+                System.out.println(dt+" ms per loop");
+                System.out.printf(
+                        "Velocity = (%.2f, %.2f, %.2f)\n",
+                        player.getVelocity().x,
+                        player.getVelocity().y,
+                        player.getVelocity().z
+                );
+                System.out.printf(
+                        "Position = (%.2f, %.2f, %.2f)\n",
+                        player.getPos().x,
+                        player.getPos().y,
+                        player.getPos().z
+                );
+            }
+            iteration++;
             Display.update();
+            update();
+            
             Display.sync(60);
             
-            if(iteration%100 == 0)
-                System.out.println(deltaTime+" ms per loop");
-            iteration++;
         }
     }
     
@@ -238,11 +287,17 @@ public class LWJGLMain {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         
-        camera.lookThrough();
-        
+        player.getCamera().lookThrough();
         world.render();
         
         glFlush();
+    }
+    
+    private void update()
+    {
+        player.updateVelocity(dt);
+        world.handleCollisions();
+        player.updatePosition();
     }
     
     // method: getDeltaTime
@@ -265,13 +320,13 @@ public class LWJGLMain {
     
     private void initLightArrays()
     {
-        diffuseWhiteLight  = BufferUtils.createFloatBuffer(4);
+        diffuseWhiteLight   = BufferUtils.createFloatBuffer(4);
         specularWhiteLight  = BufferUtils.createFloatBuffer(4);
-        ambientWhiteLight  = BufferUtils.createFloatBuffer(4);
+        ambientWhiteLight   = BufferUtils.createFloatBuffer(4);
         
-        diffuseWhiteLight.put(new float[]{1f, 1f, 1f, 0.0f}).flip();
-        specularWhiteLight.put(new float[]{.5f, .5f, .5f, 0.0f}).flip();
-        ambientWhiteLight.put(new float[]{.25f, .25f, .25f, 0.0f}).flip();
+        diffuseWhiteLight.put(  new float[]{1.0f, 1.0f, 1.0f, 0.0f} ).flip();
+        specularWhiteLight.put( new float[]{0.5f, 0.5f, 0.5f, 0.0f} ).flip();
+        ambientWhiteLight.put(  new float[]{.25f, .25f, .25f, 0.0f} ).flip();
     }
     
     // method: initGL
@@ -308,8 +363,6 @@ public class LWJGLMain {
         
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
-        
-        
     }
     
 }

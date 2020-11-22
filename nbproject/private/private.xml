@@ -5,7 +5,7 @@
             <url>src/genericminecraft/LWJGLMain.java</url>
             <bookmark id="1">
                 <name/>
-                <line>292</line>
+                <line>347</line>
                 <key/>
             </bookmark>
         </file>
@@ -16,6 +16,7 @@
             <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Camera.java</file>
             <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Chunk.java</file>
             <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/World.java</file>
+            <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/Player.java</file>
             <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/GenericMinecraft.java</file>
             <file>file:/C:/NetBeansProjects/GenericMinecraft/src/genericminecraft/LWJGLMain.java</file>
         </group>

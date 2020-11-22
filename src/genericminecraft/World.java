@@ -5,57 +5,217 @@
  */
 package genericminecraft;
 
+import java.util.HashMap;
 import java.util.Random;
 
-/**
- *
- * @author Ameer Abdallah <Ameer Abdallah>
- */
+/***************************************************************
+* @file: Chunk.java
+* @author: Ameer Abdallah
+* @class: CS 4450 - Computer Graphics
+* 
+* @assignment: Checkpoint 3
+* @date last modified: 10/30/2020
+*
+* @purpose: 
+* Manages the rendering of a chunk object and the blocks that the chunk consists
+* of. Manages the vertex buffer objects for vertex, color and texture data.
+****************************************************************/ 
 public class World {
     
-    private Chunk chunks[][];
+    private HashMap < String, Chunk > chunks = new HashMap < String, Chunk >();
     
+    private final int CHUNKS_X = 4;
+    private final int CHUNKS_Z = 4;
     static final int SEED = new Random().nextInt();
     static final Random R = new Random(SEED);
     static final SimplexNoise HEIGHT_NOISE  = new SimplexNoise(150, 0.4, R.nextInt());
     static final SimplexNoise HUMIDITY_NOISE = new SimplexNoise(300, 0.6, R.nextInt());
+    private Player player;
     
-    public World()
+    public World(Player player)
     {
         loadChunks();
+        this.player = player;
     }
     
     private void loadChunks()
     {
-        chunks = new Chunk[4][4];
-        
-        for(int i = 0; i < chunks.length; i++)
+        for(int i = 0; i < CHUNKS_X; i++)
         {
-            for(int j = 0; j < chunks[i].length; j++)
+            for(int j = 0; j < CHUNKS_Z; j++)
             {
-                chunks[i][j] = new Chunk(i, j);
+                chunks.put(i + " " + j, new Chunk(i, j));
             }
         }
         
-        for(int i = 0; i < chunks.length; i++)
+        for(int i = 0; i < CHUNKS_X; i++)
         {
-            for(int j = 0; j < chunks[i].length; j++)
+            for(int j = 0; j < CHUNKS_Z; j++)
             {
-                chunks[i][j].initializeSurroundingBlockValues();
-                chunks[i][j].rebuildMesh();
+                chunks.get(i + " " + j).initializeSurroundingBlockValues();
+                chunks.get(i + " " + j).rebuildMesh();
             }
         }
     }
     
     public void render()
     {
-        for(int i = 0; i < chunks.length; i++)
+        for(int i = 0; i < CHUNKS_X; i++)
         {
-            for(int j = 0; j < chunks[i].length; j++)
+            for(int j = 0; j < CHUNKS_Z; j++)
             {
-                chunks[i][j].render();
+                chunks.get(i + " " + j).render();
             }
         }
     }
     
+    public void handleCollisions()
+    {
+        float pX = player.getPosInBlockSpace().x;
+        float pY = player.getPosInBlockSpace().y;
+        float pZ = player.getPosInBlockSpace().z;
+        
+        float pW = Player.PLAYER_SIZE_XZ/4f;
+        float pH = Player.PLAYER_SIZE_Y/4f;
+        
+        if(player.getVelocity().x > 0)
+        {
+            if( getBlock((int)(pX+pW), (int)(pY-pH), (int)pZ) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)(pX+pW), (int)(pY-pH), (int)pZ))
+                {
+                    player.getVelocity().x = 0;
+                }
+            }
+            if( getBlock((int)(pX+pW), (int)(pY+pH), (int)pZ) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)(pX+pW), (int)(pY+pH), (int)pZ))
+                {
+                    player.getVelocity().x = 0;
+                }
+            }
+        }
+        
+        if(player.getVelocity().x < 0)
+        {
+            if( getBlock((int)(pX-pW), (int)(pY-pH), (int)pZ) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)(pX-pW), (int)(pY-pH), (int)pZ))
+                {
+                    player.getVelocity().x = 0;
+                }
+            }
+            if( getBlock((int)(pX-pW), (int)(pY+pH), (int)pZ) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)(pX-pW), (int)(pY+pH), (int)pZ))
+                {
+                    player.getVelocity().x = 0;
+                }
+            }
+        }
+        
+        if(player.getVelocity().z > 0)
+        {
+            if( getBlock((int)pX, (int)(pY-pH), (int)(pZ+pW)) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)pX, (int)(pY-pH), (int)(pZ+pW)))
+                {
+                    player.getVelocity().z = 0;
+                }
+            }
+            if( getBlock((int)pX, (int)(pY+pH), (int)(pZ+pW)) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)pX, (int)(pY+pH), (int)(pZ+pW)))
+                {
+                    player.getVelocity().z = 0;
+                }
+            }
+        }
+        
+        if(player.getVelocity().z < 0)
+        {
+            if( getBlock((int)pX, (int)(pY-pH), (int)(pZ-pW)) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)pX, (int)(pY-pH), (int)(pZ-pW)))
+                {
+                    player.getVelocity().z = 0;
+                }
+            }
+            if( getBlock((int)pX, (int)(pY+pH), (int)(pZ-pW)) != null)
+            {
+                if(isPlayerCollidingWithBlock((int)pX, (int)(pY+pH), (int)(pZ-pW)))
+                {
+                    player.getVelocity().z = 0;
+                }
+            }
+        }
+        
+        if(player.getVelocity().y > 0)
+        {
+            if( getBlock((int)pX, (int)(pY+pH*2), (int)pZ) != null
+                    )
+            {
+                if(isPlayerCollidingWithBlock((int)pX, (int)(pY+pH*2), (int)pZ))
+                    player.getVelocity().y = 0;
+            }
+        }
+        if(player.getVelocity().y < 0)
+        {
+            if( getBlock((int)pX, (int)(pY-pH*2), (int)pZ) != null
+                    )
+            {
+                if(isPlayerCollidingWithBlock((int)pX, (int)(pY-pH*2), (int)pZ))
+                    player.getVelocity().y = 0;
+            }
+        }
+    }
+    
+    // get block from block space
+    public Block getBlock(int x, int y, int z)
+    {
+        int chunkX = x / Chunk.CHUNK_SIZE;
+        int chunkZ = z / Chunk.CHUNK_SIZE;
+        
+        int blockX = x % Chunk.CHUNK_SIZE;
+        int blockY = y;
+        int blockZ = z % Chunk.CHUNK_SIZE;
+        
+        if(blockX < 0)
+        {
+            chunkX--;
+        }
+        if(blockZ < 0)
+        {
+            chunkZ--;
+        }
+        
+        
+        if(chunks.get(chunkX + " " + chunkZ) == null || y < 0  || y > Chunk.CHUNK_SIZE_Y-1)
+            return null;
+        
+        return chunks.get(chunkX + " " + chunkZ).getBlock(blockX, blockY, blockZ);
+    }
+    
+    public boolean isPlayerCollidingWithBlock(int x, int y, int z)
+    {   
+        // Block Collision Box Data
+        float cubeSize = Chunk.CUBE_LENGTH;
+        float blockWorldX = x*cubeSize;
+        float blockWorldY = y*cubeSize;
+        float blockWorldZ = z*cubeSize;
+        
+        if(getBlock(x, y, z).getType() != Block.BlockType.AIR && getBlock(x, y, z).getType() != Block.BlockType.WATER)
+        {
+            if(
+                Math.abs(blockWorldY - player.getPos().y) < cubeSize + Player.PLAYER_SIZE_Y &&
+                Math.abs(blockWorldX - player.getPos().x) < cubeSize + Player.PLAYER_SIZE_XZ &&
+                Math.abs(blockWorldZ - player.getPos().z) < cubeSize + Player.PLAYER_SIZE_XZ
+                )
+            {
+            return true;
+            }
+        }
+        
+        return false;
+    }
 }

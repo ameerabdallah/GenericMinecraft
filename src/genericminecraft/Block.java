@@ -16,7 +16,6 @@ public class Block
     private BlockType blockType; // whatever kind of block it is
     private Block top, bot, front, back, left, right;
     
-    
     // method: Block
     // given no parameters assume the block that is given is air
     // construct a Block object
