@@ -164,4 +164,9 @@ public class Block
                 || (blockType != Block.BlockType.WATER && right.getType() == Block.BlockType.WATER);
     }
     
+    public void setBlockType(BlockType type)
+    {
+        this.blockType = type;
+    }
+    
 }

@@ -53,10 +53,9 @@ public class Camera {
         float lookX, lookY, lookZ;
         lookX = (float)(Math.cos(Math.toRadians(pitch))*Math.sin(Math.toRadians(yaw)));
         lookY = (float)Math.sin(Math.toRadians(pitch));        
-        lookZ = (float)(Math.cos(Math.toRadians(pitch))*Math.cos(Math.toRadians(yaw)));
+        lookZ = -(float)(Math.cos(Math.toRadians(pitch))*Math.cos(Math.toRadians(yaw)));
 
         look = new Vector3f(lookX, lookY, lookZ);
-        
     }
     
     // method: yaw
@@ -67,7 +66,7 @@ public class Camera {
         float lookX, lookY, lookZ;
         lookX = (float)(Math.cos(Math.toRadians(pitch))*Math.sin(Math.toRadians(yaw)));
         lookY = (float)Math.sin(Math.toRadians(pitch));        
-        lookZ = (float)(Math.cos(Math.toRadians(pitch))*Math.cos(Math.toRadians(yaw)));
+        lookZ = -(float)(Math.cos(Math.toRadians(pitch))*Math.cos(Math.toRadians(yaw)));
 
         look = new Vector3f(lookX, lookY, lookZ);
     }
@@ -84,7 +83,7 @@ public class Camera {
         float lookX, lookY, lookZ;
         lookX = (float)(Math.cos(Math.toRadians(pitch))*Math.sin(Math.toRadians(yaw)));
         lookY = (float)Math.sin(Math.toRadians(pitch));        
-        lookZ = (float)(Math.cos(Math.toRadians(pitch))*Math.cos(Math.toRadians(yaw)));
+        lookZ = -(float)(Math.cos(Math.toRadians(pitch))*Math.cos(Math.toRadians(yaw)));
 
         look = new Vector3f(lookX, lookY, lookZ);
     }
@@ -94,7 +93,6 @@ public class Camera {
     // transform vertices to give camera perspective
     public void lookThrough()
     {
-        
         glRotatef(-pitch, 1.0f, 0.0f, 0.0f);
         glRotatef(yaw, 0.0f, 1.0f, 0.0f);
         glTranslatef(-pos.x, -pos.y, -pos.z);

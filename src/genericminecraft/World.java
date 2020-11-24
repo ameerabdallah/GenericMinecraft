@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package genericminecraft;
 
 import java.util.HashMap;
@@ -71,9 +66,9 @@ public class World {
     
     public void handleCollisions()
     {
-        float pX = player.getPosInBlockSpace().x;
-        float pY = player.getPosInBlockSpace().y;
-        float pZ = player.getPosInBlockSpace().z;
+        int pX = (int)player.getPosInBlockSpace().x;
+        int pY = (int)player.getPosInBlockSpace().y;
+        int pZ = (int)player.getPosInBlockSpace().z;
         
         float pW = Player.PLAYER_SIZE_XZ/4f;
         float pH = Player.PLAYER_SIZE_Y/4f;
@@ -152,8 +147,7 @@ public class World {
         
         if(player.getVelocity().y > 0)
         {
-            if( getBlock((int)pX, (int)(pY+pH*2), (int)pZ) != null
-                    )
+            if( getBlock((int)pX, (int)(pY+pH*2), (int)pZ) != null )
             {
                 if(isPlayerCollidingWithBlock((int)pX, (int)(pY+pH*2), (int)pZ))
                     player.getVelocity().y = 0;
@@ -161,13 +155,18 @@ public class World {
         }
         if(player.getVelocity().y < 0)
         {
-            if( getBlock((int)pX, (int)(pY-pH*2), (int)pZ) != null
-                    )
+            if( getBlock((int)pX, (int)(pY-pH*2), (int)pZ) != null )
             {
                 if(isPlayerCollidingWithBlock((int)pX, (int)(pY-pH*2), (int)pZ))
                     player.getVelocity().y = 0;
             }
         }
+    }
+    
+    public void removeBlockAt(int x, int y, int z)
+    {
+        getBlock(x, y, z).setBlockType(Block.BlockType.AIR);
+        getChunk(x, z).rebuildMesh();
     }
     
     // get block from block space
@@ -180,11 +179,11 @@ public class World {
         int blockY = y;
         int blockZ = z % Chunk.CHUNK_SIZE;
         
-        if(blockX < 0)
+        if(x < 0)
         {
             chunkX--;
         }
-        if(blockZ < 0)
+        if(z < 0)
         {
             chunkZ--;
         }
@@ -193,7 +192,25 @@ public class World {
         if(chunks.get(chunkX + " " + chunkZ) == null || y < 0  || y > Chunk.CHUNK_SIZE_Y-1)
             return null;
         
+        
         return chunks.get(chunkX + " " + chunkZ).getBlock(blockX, blockY, blockZ);
+    }
+    
+    public Chunk getChunk(int x, int z)
+    {
+        int chunkX = x / Chunk.CHUNK_SIZE;
+        int chunkZ = z / Chunk.CHUNK_SIZE;
+        
+        if(x < 0)
+        {
+            chunkX--;
+        }
+        if(z < 0)
+        {
+            chunkZ--;
+        }
+        
+        return chunks.get(chunkX + " " + chunkZ);
     }
     
     public boolean isPlayerCollidingWithBlock(int x, int y, int z)

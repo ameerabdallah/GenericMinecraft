@@ -23,20 +23,25 @@ import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_LIGHT0;
 import static org.lwjgl.opengl.GL11.GL_LIGHTING;
 import static org.lwjgl.opengl.GL11.GL_LINE;
+import static org.lwjgl.opengl.GL11.GL_LINES;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
 import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_SPECULAR;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
+import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glColor3f;
 import static org.lwjgl.opengl.GL11.glCullFace;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
+import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glFlush;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glLight;
@@ -44,7 +49,9 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glVertex3f;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
+import org.lwjgl.util.vector.Vector3f;
 
 /***************************************************************
 * @file: LWJGLMain.java
@@ -228,6 +235,30 @@ public class LWJGLMain {
         player.getCamera().pitch(dy * mouseSensitivity * (float)dt);
         
         Mouse.setCursorPosition(W_WIDTH/2, W_HEIGHT/2);
+        
+        if(Mouse.isButtonDown(0))
+        {
+            for(float i = 0; i < 500*Chunk.CUBE_LENGTH; i+=.01)
+            {
+                Vector3f raycast = new Vector3f(player.getCamera().getLook());
+                
+                raycast.scale(i);
+                raycast.x += player.getCamera().getPos().x/Chunk.CUBE_LENGTH;
+                raycast.y += player.getCamera().getPos().y/Chunk.CUBE_LENGTH;
+                raycast.z += player.getCamera().getPos().z/Chunk.CUBE_LENGTH;
+                
+                if (world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z) != null)
+                {
+                    if(world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z).getType() != Block.BlockType.AIR &&
+                       world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z).getType() != Block.BlockType.WATER)
+                    {
+                        world.removeBlockAt((int)raycast.x, (int)raycast.y, (int)raycast.z);
+                        break;
+                    }
+                }
+            }
+        }
+        
     }
     
     // method: run
@@ -255,19 +286,25 @@ public class LWJGLMain {
             
             if(iteration%100 == 0)
             {
-                System.out.println(dt+" ms per loop");
+//                System.out.println(dt+" ms per loop");
+//                System.out.printf(
+//                        "Velocity = (%.2f, %.2f, %.2f)\n",
+//                        player.getVelocity().x,
+//                        player.getVelocity().y,
+//                        player.getVelocity().z
+//                );
+//                System.out.printf(
+//                        "Position = (%.2f, %.2f, %.2f)\n",
+//                        player.getPos().x,
+//                        player.getPos().y,
+//                        player.getPos().z
+//                );
                 System.out.printf(
-                        "Velocity = (%.2f, %.2f, %.2f)\n",
-                        player.getVelocity().x,
-                        player.getVelocity().y,
-                        player.getVelocity().z
-                );
-                System.out.printf(
-                        "Position = (%.2f, %.2f, %.2f)\n",
-                        player.getPos().x,
-                        player.getPos().y,
-                        player.getPos().z
-                );
+                        "BlockPos = %d, %d, %d\n",
+                        (int)player.getPosInBlockSpace().x,
+                        (int)player.getPosInBlockSpace().y,
+                        (int)player.getPosInBlockSpace().z
+                        );
             }
             iteration++;
             Display.update();
@@ -288,7 +325,25 @@ public class LWJGLMain {
         glLoadIdentity();
         
         player.getCamera().lookThrough();
-        world.render();
+        
+        world.render(); 
+        glColor3f(1, 0, 0);
+        glBegin(GL_QUADS);
+            glVertex3f(player.getPos().x-Player.PLAYER_SIZE_XZ/2, player.getPos().y-Player.PLAYER_SIZE_Y/2, player.getPos().z-Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x+Player.PLAYER_SIZE_XZ/2, player.getPos().y-Player.PLAYER_SIZE_Y/2, player.getPos().z-Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x+Player.PLAYER_SIZE_XZ/2, player.getPos().y-Player.PLAYER_SIZE_Y/2, player.getPos().z+Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x-Player.PLAYER_SIZE_XZ/2, player.getPos().y-Player.PLAYER_SIZE_Y/2, player.getPos().z+Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x-Player.PLAYER_SIZE_XZ/2, player.getPos().y+Player.PLAYER_SIZE_Y/2, player.getPos().z-Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x+Player.PLAYER_SIZE_XZ/2, player.getPos().y+Player.PLAYER_SIZE_Y/2, player.getPos().z-Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x+Player.PLAYER_SIZE_XZ/2, player.getPos().y+Player.PLAYER_SIZE_Y/2, player.getPos().z+Player.PLAYER_SIZE_XZ/2);
+            glVertex3f(player.getPos().x-Player.PLAYER_SIZE_XZ/2, player.getPos().y+Player.PLAYER_SIZE_Y/2, player.getPos().z+Player.PLAYER_SIZE_XZ/2);
+        glEnd();
+        
+        glColor3f(0, 1, 1);
+        glBegin(GL_LINES);
+            glVertex3f(player.getPos().x, player.getPos().y, player.getPos().z);
+            glVertex3f(player.getCamera().getLook().x+player.getCamera().getPos().x, player.getCamera().getLook().y+player.getCamera().getPos().y, player.getCamera().getLook().z+player.getCamera().getPos().z);
+        glEnd();
         
         glFlush();
     }
