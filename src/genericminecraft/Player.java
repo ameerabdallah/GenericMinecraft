@@ -13,13 +13,14 @@ import org.lwjgl.util.vector.Vector3f;
  */
 public class Player 
 {
-    public static final float PLAYER_SIZE_Y = Chunk.CUBE_LENGTH*2;
-    public static final float PLAYER_SIZE_XZ = Chunk.CUBE_LENGTH/2;
+    public static final float SIZE_Y = Chunk.CUBE_LENGTH*2;
+    public static final float SIZE_XZ = Chunk.CUBE_LENGTH/2;
     private final float GRAVITY = .01f;
     private final float TERMINAL_VELOCITY = 10f;
     private final float ACCELERATION_XZ = 0.005f;
     private final float JUMP_ACCELERATION = 0.07f;
     
+    private boolean firstPerson;
     private boolean flying;
     
     private Vector3f velocity;
@@ -94,11 +95,25 @@ public class Player
         pos.z += velocity.z;
         
         // Adjust camera to move with player appropriately
-        camera.getPos().x = pos.x;
-        camera.getPos().y = pos.y+(0.25f)*PLAYER_SIZE_Y;
-        camera.getPos().z = pos.z;
+        if(firstPerson)
+        {
+            camera.getPos().x = pos.x;
+            camera.getPos().y = pos.y+(0.25f)*SIZE_Y;
+            camera.getPos().z = pos.z;
+        }
+        else
+        {
+            camera.getPos().x = pos.x-(5*(float)Math.sin(Math.toRadians(camera.getYaw())));
+            camera.getPos().y = pos.y+(10*(float)Math.sin(Math.toRadians(-camera.getPitch())));
+            camera.getPos().z = pos.z+(5*(float)Math.cos(Math.toRadians(camera.getYaw())));
+        }
         
         posToBlockSpace();
+    }
+    
+    public void toggleFirstPerson()
+    {
+        firstPerson = !firstPerson;
     }
     
     public Camera getCamera()
@@ -142,8 +157,8 @@ public class Player
     
     private void posToBlockSpace()
     {
-        posInBlockSpace.x = pos.x/Chunk.CUBE_LENGTH;
-        posInBlockSpace.y = pos.y/Chunk.CUBE_LENGTH;
-        posInBlockSpace.z = pos.z/Chunk.CUBE_LENGTH;
+        posInBlockSpace.x = (pos.x - (Chunk.CUBE_LENGTH/2))/Chunk.CUBE_LENGTH;
+        posInBlockSpace.y = (pos.y - (Chunk.CUBE_LENGTH/2))/Chunk.CUBE_LENGTH;;
+        posInBlockSpace.z = (pos.z - (Chunk.CUBE_LENGTH/2))/Chunk.CUBE_LENGTH;;
     }
 }
