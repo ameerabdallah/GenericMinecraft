@@ -36,8 +36,6 @@ public class Camera {
     static final float PLAYER_HEIGHT = 2*Chunk.CUBE_LENGTH;
     static final float PLAYER_LENGTH = 2/Chunk.CUBE_LENGTH;
     
-    
-    
     // method: Camera
     // construct a Camera object
     public Camera(float x, float y, float z)

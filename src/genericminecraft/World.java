@@ -21,12 +21,14 @@ public class World {
     
     private final int COLLISION_CHECK_DISTANCE = 2;
     private final int CHUNKS_X = 4;
-    private final int CHUNKS_Z = 2;
+    private final int CHUNKS_Z = 4;
+    private final float MOVEMENT_EPSILON = 0.00001f;
     static final int SEED = new Random().nextInt();
     static final Random R = new Random(SEED);
     static final SimplexNoise HEIGHT_NOISE  = new SimplexNoise(150, 0.4, R.nextInt());
     static final SimplexNoise HUMIDITY_NOISE = new SimplexNoise(300, 0.6, R.nextInt());
     private Player player;
+    
     
     public World(Player player)
     {
@@ -75,59 +77,63 @@ public class World {
                 {
                     if(isPlayerCollidingWithBlock(x, y, z))
                     {
-                        
-                        if ((int)player.getPosInBlockSpace().x == x && (int)player.getPosInBlockSpace().z == z)
-                        {
-                            if (player.getVelocity().y > 0)
-                            { 
-                                if ( player.getPos().y < y*Chunk.CUBE_LENGTH )
-                                {
-                                    player.getVelocity().y = 0;
-                                    player.getPos().y = y*Chunk.CUBE_LENGTH - Player.SIZE_Y/2 - Chunk.CUBE_LENGTH/2;
-                                }
-                            }
-                            else if (player.getVelocity().y < 0)
+                        if (player.getVelocity().y > 0)
+                        { 
+                            if ( player.getPos().y < y*Chunk.CUBE_LENGTH )
                             {
-                                if ( player.getPos().y > y*Chunk.CUBE_LENGTH)
-                                {
-                                    player.getVelocity().y = 0;
-                                    player.getPos().y = y*Chunk.CUBE_LENGTH + Player.SIZE_Y/2 + Chunk.CUBE_LENGTH/2;
-                                }
+                                player.getVelocity().y = 0;
+                                player.getPos().y = y*Chunk.CUBE_LENGTH - Player.SIZE_Y/2 - Chunk.CUBE_LENGTH/2;
+                                break;
                             }
-                            break;
                         }
+                        else if (player.getVelocity().y < 0)
+                        {
+                            if ( player.getPos().y > y*Chunk.CUBE_LENGTH)
+                            {
+                                player.getVelocity().y = 0;
+                                player.getPos().y = y*Chunk.CUBE_LENGTH + Player.SIZE_Y/2 + Chunk.CUBE_LENGTH/2;
+                                player.setGrounded(true);
+                                break;
+                            }
+                        }
+                        
+                        
                         if (player.getVelocity().x > 0)
                         {   
-                            if ( player.getPos().x < x*Chunk.CUBE_LENGTH )
+                            if ( player.getPos().x < x*Chunk.CUBE_LENGTH)
                             {
                                 player.getPos().x = x*Chunk.CUBE_LENGTH - Player.SIZE_XZ/2 - Chunk.CUBE_LENGTH/2;
                                 player.getVelocity().x = 0;
+                                break;
                             }
                         }
                         else if (player.getVelocity().x < 0)
                         {
-                            if ( player.getPos().x > x*Chunk.CUBE_LENGTH )
+                            if ( player.getPos().x > x*Chunk.CUBE_LENGTH)
                             {
                                 player.getPos().x =  x*Chunk.CUBE_LENGTH + Player.SIZE_XZ/2 + Chunk.CUBE_LENGTH/2;
                                 player.getVelocity().x = 0;
+                                break;
                             }
                             
                         }
                         
                         if (player.getVelocity().z > 0)
                         {   
-                            if ( player.getPos().z < z*Chunk.CUBE_LENGTH )
+                            if ( player.getPos().z < z*Chunk.CUBE_LENGTH)
                             {
                                 player.getPos().z = z*Chunk.CUBE_LENGTH - Player.SIZE_XZ/2 - Chunk.CUBE_LENGTH/2;
                                 player.getVelocity().z = 0;
+                                break;
                             }
                         }
                         else if (player.getVelocity().z < 0)
                         {
-                            if ( player.getPos().z > z*Chunk.CUBE_LENGTH )
+                            if ( player.getPos().z > z*Chunk.CUBE_LENGTH)
                             {
                                 player.getPos().z = z*Chunk.CUBE_LENGTH + Player.SIZE_XZ/2 + Chunk.CUBE_LENGTH/2;
                                 player.getVelocity().z = 0;
+                                break;
                             }
                             
                         }
@@ -197,15 +203,32 @@ public class World {
         float blockWorldY = y*cubeSize;
         float blockWorldZ = z*cubeSize;
         
+        // 
+        float pMinX = player.getPos().x-Player.SIZE_XZ/2;
+        float pMinY = player.getPos().y-Player.SIZE_Y/2;
+        float pMinZ = player.getPos().z-Player.SIZE_XZ/2;
+        float pMaxX = player.getPos().x+Player.SIZE_XZ/2;
+        float pMaxY = player.getPos().y+Player.SIZE_Y/2;
+        float pMaxZ = player.getPos().z+Player.SIZE_XZ/2;
+        
+        
+        float bMinX = blockWorldX-Chunk.CUBE_LENGTH/2;
+        float bMinY = blockWorldY-Chunk.CUBE_LENGTH/2;
+        float bMinZ = blockWorldZ-Chunk.CUBE_LENGTH/2;
+        float bMaxX = blockWorldX+Chunk.CUBE_LENGTH/2;
+        float bMaxY = blockWorldY+Chunk.CUBE_LENGTH/2;
+        float bMaxZ = blockWorldZ+Chunk.CUBE_LENGTH/2;
+        
+        
         if (getBlock(x, y, z) == null)
             return false;
         
         if(getBlock(x, y, z).getType() != Block.BlockType.AIR && getBlock(x, y, z).getType() != Block.BlockType.WATER)
         {
             if(
-                Math.abs(blockWorldY - player.getPos().y) < cubeSize + Player.SIZE_Y &&
-                Math.abs(blockWorldX - player.getPos().x) < cubeSize + Player.SIZE_XZ &&
-                Math.abs(blockWorldZ - player.getPos().z) < cubeSize + Player.SIZE_XZ
+                pMinX <= bMaxX - MOVEMENT_EPSILON && pMaxX >= bMinX + MOVEMENT_EPSILON&&
+                pMinY <= bMaxY - MOVEMENT_EPSILON && pMaxY >= bMinY + MOVEMENT_EPSILON&&
+                pMinZ <= bMaxZ - MOVEMENT_EPSILON && pMaxZ >= bMinZ + MOVEMENT_EPSILON
                 )
             {
             return true;
@@ -214,29 +237,5 @@ public class World {
         
         return false;
     }
-    public boolean willPlayerCollideWithBlock(int x, int y, int z)
-    {   
-        // Block Collision Box Data
-        float cubeSize = Chunk.CUBE_LENGTH;
-        float blockWorldX = x*cubeSize;
-        float blockWorldY = y*cubeSize;
-        float blockWorldZ = z*cubeSize;
-        
-        if (getBlock(x, y, z) == null)
-            return false;
-        
-        if(getBlock(x, y, z).getType() != Block.BlockType.AIR && getBlock(x, y, z).getType() != Block.BlockType.WATER)
-        {
-            if(
-                Math.abs(blockWorldY - player.getPos().y + player.getVelocity().y) < cubeSize + Player.SIZE_Y &&
-                Math.abs(blockWorldX - player.getPos().x + player.getVelocity().x) < cubeSize + Player.SIZE_XZ &&
-                Math.abs(blockWorldZ - player.getPos().z + player.getVelocity().z) < cubeSize + Player.SIZE_XZ
-                )
-            {
-            return true;
-            }
-        }
-        
-        return false;
-    }
+    
 }

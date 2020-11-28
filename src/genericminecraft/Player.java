@@ -15,13 +15,15 @@ public class Player
 {
     public static final float SIZE_Y = Chunk.CUBE_LENGTH*2;
     public static final float SIZE_XZ = Chunk.CUBE_LENGTH/2;
-    private final float GRAVITY = .01f;
-    private final float TERMINAL_VELOCITY = 10f;
-    private final float ACCELERATION_XZ = 0.005f;
-    private final float JUMP_ACCELERATION = 0.07f;
+    public static final float ACCELERATION_XZ = 0.0035f;
+    public static final float GRAVITY = .001f;
+    private final float TERMINAL_VELOCITY = 3f;
+    private final float JUMP_ACCELERATION = 0.08f;
+    private final float TOP_SPEED = 1f;
     
     private boolean firstPerson;
     private boolean flying;
+    private boolean grounded;
     
     private Vector3f velocity;
     private Vector3f pos;
@@ -38,12 +40,12 @@ public class Player
         pos = new Vector3f(x, y, z);
         posInBlockSpace = new Vector3f(x, y, z);
         
+        firstPerson = true;
         updatePosition();
     }
     
     public void updateVelocityJump(float dt)
     {
-        pos.y += 0.5f;
         velocity.y += JUMP_ACCELERATION*dt;
     }
     
@@ -61,24 +63,28 @@ public class Player
     {
         velocity.x += ACCELERATION_XZ * (float)Math.sin(Math.toRadians(camera.getYaw()))*dt;
         velocity.z -= ACCELERATION_XZ * (float)Math.cos(Math.toRadians(camera.getYaw()))*dt;
+        adjustForTopSpeed();
     }
     
     public void updateVelocityBackward(float dt)
     {
         velocity.x -= ACCELERATION_XZ * (float)Math.sin(Math.toRadians(camera.getYaw()))*dt;
         velocity.z += ACCELERATION_XZ * (float)Math.cos(Math.toRadians(camera.getYaw()))*dt;
+        adjustForTopSpeed();
     }
     
     public void updateVelocityLeft(float dt)
     {
         velocity.x += ACCELERATION_XZ * (float)Math.sin(Math.toRadians(camera.getYaw()-90))*dt;
         velocity.z -= ACCELERATION_XZ * (float)Math.cos(Math.toRadians(camera.getYaw()-90))*dt;
+        adjustForTopSpeed();
     }
     
     public void updateVelocityRight(float dt)
     {
         velocity.x += ACCELERATION_XZ * (float)Math.sin(Math.toRadians(camera.getYaw()+90))*dt;
         velocity.z -= ACCELERATION_XZ * (float)Math.cos(Math.toRadians(camera.getYaw()+90))*dt;
+        adjustForTopSpeed();
     }
     
     public void updateGravity(float dt)
@@ -116,6 +122,30 @@ public class Player
         firstPerson = !firstPerson;
     }
     
+    public void adjustForTopSpeed()
+    {
+        if(velocity.x*velocity.x + velocity.z*velocity.z > TOP_SPEED*TOP_SPEED)
+        {
+            velocity.x = velocity.x / (float)Math.sqrt(velocity.x*velocity.x + velocity.z*velocity.z) * TOP_SPEED;
+            velocity.z = velocity.z / (float)Math.sqrt(velocity.x*velocity.x + velocity.z*velocity.z) * TOP_SPEED;
+        }
+    }
+    
+    public void setGrounded(boolean grounded)
+    {
+        this.grounded = grounded;
+    }
+    
+    public boolean isFirstPerson()
+    {
+        return firstPerson;
+    }
+    
+    public boolean isGrounded()
+    {
+        return grounded;
+    }
+    
     public Camera getCamera()
     {
         return camera;
@@ -141,7 +171,10 @@ public class Player
         if(!flying && Math.round(velocity.y*10)/10 <= 0)
             updateGravity(dt);
         
-        velocity.scale(.85f);
+        if(grounded)
+            velocity.scale(.80f);
+        else
+        velocity.scale(.95f);
     }
     
     
@@ -158,7 +191,7 @@ public class Player
     private void posToBlockSpace()
     {
         posInBlockSpace.x = (pos.x - (Chunk.CUBE_LENGTH/2))/Chunk.CUBE_LENGTH;
-        posInBlockSpace.y = (pos.y - (Chunk.CUBE_LENGTH/2))/Chunk.CUBE_LENGTH;;
+        posInBlockSpace.y = (pos.y - (Chunk.CUBE_LENGTH/2) + SIZE_Y/4)/Chunk.CUBE_LENGTH;;
         posInBlockSpace.z = (pos.z - (Chunk.CUBE_LENGTH/2))/Chunk.CUBE_LENGTH;;
     }
 }

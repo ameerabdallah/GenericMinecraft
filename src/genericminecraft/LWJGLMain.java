@@ -196,20 +196,12 @@ public class LWJGLMain {
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)) 
         {
-            if(player.isFlying())
+            if (player.isFlying())
                 player.updateVelocityFlying(dt);
-            else
+            else if (player.isGrounded())
             {
-                float pX = player.getPosInBlockSpace().x;
-                float pY = player.getPosInBlockSpace().y;
-                float pZ = player.getPosInBlockSpace().z;
-                float pH = Player.SIZE_Y/4f;
-                
-                if( world.getBlock((int)pX, (int)(pY-pH*2), (int)pZ) != null )
-                {
-                    if(world.isPlayerCollidingWithBlock((int)pX, (int)(pY-pH*2), (int)pZ))
-                        player.updateVelocityJump(dt);
-                }
+                player.setGrounded(false);
+                player.updateVelocityJump(dt);
             }
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) 
@@ -239,28 +231,28 @@ public class LWJGLMain {
         
         Mouse.setCursorPosition(W_WIDTH/2, W_HEIGHT/2);
         
-//        if(Mouse.isButtonDown(0))
-//        {
-//            for(float i = 0; i < 500*Chunk.CUBE_LENGTH; i+=.01)
-//            {
-//                Vector3f raycast = new Vector3f(player.getCamera().getLook());
-//                
-//                raycast.scale(i);
-//                raycast.x += player.getCamera().getPos().x/Chunk.CUBE_LENGTH;
-//                raycast.y += player.getCamera().getPos().y/Chunk.CUBE_LENGTH;
-//                raycast.z += player.getCamera().getPos().z/Chunk.CUBE_LENGTH;
-//                
-//                if (world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z) != null)
-//                {
-//                    if(world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z).getType() != Block.BlockType.AIR &&
-//                       world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z).getType() != Block.BlockType.WATER)
-//                    {
-//                        world.removeBlockAt((int)raycast.x, (int)raycast.y, (int)raycast.z);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
+        if(Mouse.isButtonDown(0))
+        {
+            for(float i = 0; i < 500*Chunk.CUBE_LENGTH; i+=.1)
+            {
+                Vector3f raycast = new Vector3f(player.getCamera().getLook());
+                
+                raycast.scale(i);
+                raycast.x += player.getCamera().getPos().x/Chunk.CUBE_LENGTH;
+                raycast.y += player.getCamera().getPos().y/Chunk.CUBE_LENGTH;
+                raycast.z += player.getCamera().getPos().z/Chunk.CUBE_LENGTH;
+                
+                if (world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z) != null)
+                {
+                    if(world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z).getType() != Block.BlockType.AIR &&
+                       world.getBlock((int)raycast.x, (int)raycast.y, (int)raycast.z).getType() != Block.BlockType.WATER)
+                    {
+                        world.removeBlockAt((int)raycast.x, (int)raycast.y, (int)raycast.z);
+                        break;
+                    }
+                }
+            }
+        }
         
     }
     
@@ -326,36 +318,71 @@ public class LWJGLMain {
         
         world.render(); 
         
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDisable(GL_TEXTURE_2D);
-        glColor3f(1, 0, 0);
-        glBegin(GL_QUADS);
-            glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
-            glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
-        glEnd();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glEnable(GL_TEXTURE_2D);
-//        
-//        glColor3f(0, 1, 1);
-//        glBegin(GL_LINES);
-//            glVertex3f(player.getPos().x, player.getPos().y, player.getPos().z);
-//            glVertex3f(player.getCamera().getLook().x+player.getCamera().getPos().x, player.getCamera().getLook().y+player.getCamera().getPos().y, player.getCamera().getLook().z+player.getCamera().getPos().z);
-//        glEnd();
+        
+        if(!player.isFirstPerson())
+        {
+            glDisable(GL_CULL_FACE);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDisable(GL_TEXTURE_2D);
+            glColor3f(1, 0, 0);
+            glBegin(GL_QUADS);
+                // bottom
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                
+                // top
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                
+                // front
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                
+                // back
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                
+                // left
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z+Player.SIZE_XZ/2);
+                
+                // right
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y+Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x-Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+                glVertex3f(player.getPos().x+Player.SIZE_XZ/2, player.getPos().y-Player.SIZE_Y/2, player.getPos().z-Player.SIZE_XZ/2);
+            glEnd();
+            
+            glColor3f(0, 1, 1);
+            glBegin(GL_LINES);
+                glVertex3f(player.getPos().x, player.getPos().y, player.getPos().z);
+                glVertex3f(player.getCamera().getLook().x+player.getCamera().getPos().x, player.getCamera().getLook().y+player.getCamera().getPos().y, player.getCamera().getLook().z+player.getCamera().getPos().z);
+            glEnd();
+            
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glEnable(GL_TEXTURE_2D);
+            glEnable(GL_CULL_FACE);
+        }
+        
         
         glFlush();
     }
     
     private void update()
     {
-        player.updateVelocity(dt);       
-        player.updatePosition();
-        world.handleCollisions();
+        player.updateVelocity(dt);  
+        world.handleCollisions(); 
+        player.updatePosition(); 
 
     }
     
