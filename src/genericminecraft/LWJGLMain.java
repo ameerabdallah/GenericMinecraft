@@ -181,6 +181,11 @@ public class LWJGLMain {
         {
             player.toggleFirstPerson();
         }
+        if (Keyboard.isKeyDown(Keyboard.KEY_F4))
+        {
+            world.changeTexture();
+        }
+        
         if(Keyboard.isKeyDown(Keyboard.KEY_D)) 
         {
             player.updateVelocityRight(dt);
