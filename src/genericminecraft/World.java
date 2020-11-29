@@ -44,15 +44,11 @@ public class World {
     
     private Texture texture1, texture2;
     
-    private boolean texture1Bound;
-    
     
     public World(Player player)
     {
         initTextures();
-        texture1.bind();
         TEXTURE_ID = texture1.getTextureID();
-        texture1Bound = true;
         loadChunks();
         this.player = player;
     }
@@ -206,25 +202,19 @@ public class World {
             e.printStackTrace();
         }
         
-        
-        
         return null;
     }
     
     public void changeTexture()
     {
-        if(texture1Bound)
+        if(TEXTURE_ID == texture1.getTextureID())
         {
             TEXTURE_ID = texture2.getTextureID();
-            texture1Bound = false;
         }
         else
         {
             TEXTURE_ID = texture1.getTextureID();
-            texture1Bound = true;
         }
-        
-        rebuildChunkMeshes();
     }
     
     public void removeBlockAt(int x, int y, int z)
