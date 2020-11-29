@@ -167,43 +167,40 @@ public class LWJGLMain {
     // make changes to the program based on keyboard input
     private void processKeyboard()
     {
-        if (Keyboard.isKeyDown(Keyboard.KEY_F1)) 
+        InputHelper.update();
+        
+        if (InputHelper.isKeyDown(Keyboard.KEY_F1)) 
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             glDisable(GL_TEXTURE_2D);
         }
-        if (Keyboard.isKeyDown(Keyboard.KEY_F2)) 
+        if (InputHelper.isKeyDown(Keyboard.KEY_F2)) 
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glEnable(GL_TEXTURE_2D);
         }
-        if (Keyboard.isKeyDown(Keyboard.KEY_F3))
+        if (InputHelper.isKeyReleased(Keyboard.KEY_F3))
         {
             player.toggleFirstPerson();
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_D)) 
+        if (InputHelper.isKeyReleased(Keyboard.KEY_F4))
+        {
+                world.changeTexture();
+        }
+        if(InputHelper.isKeyDown(Keyboard.KEY_D)) 
         {
             player.updateVelocityRight(dt);
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_F4))
-        {
-            if(textureChanger.tCheck = false)
-            {
-                textureChanger.tCheck = true;
-            }
-            textureChanger.tCheck = false;
-            
-        }
-        if(Keyboard.isKeyDown(Keyboard.KEY_A)) 
+        if(InputHelper.isKeyDown(Keyboard.KEY_A)) 
         {
             player.updateVelocityLeft(dt);
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_F))
+        if(InputHelper.isKeyReleased(Keyboard.KEY_F))
         {
             player.setFlying(player.isFlying() ? false : true);
             player.getVelocity().y = 0;
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)) 
+        if(InputHelper.isKeyDown(Keyboard.KEY_SPACE)) 
         {
             if (player.isFlying())
                 player.updateVelocityFlying(dt);
@@ -213,16 +210,16 @@ public class LWJGLMain {
                 player.updateVelocityJump(dt);
             }
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) 
+        if(InputHelper.isKeyDown(Keyboard.KEY_LSHIFT)) 
         {
             if(player.isFlying())
                 player.updateVelocityDropping(dt);
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_W)) 
+        if(InputHelper.isKeyDown(Keyboard.KEY_W)) 
         {
             player.updateVelocityForward(dt);
         }
-        if(Keyboard.isKeyDown(Keyboard.KEY_S)) 
+        if(InputHelper.isKeyDown(Keyboard.KEY_S)) 
         {
             player.updateVelocityBackward(dt);
         }

@@ -2,6 +2,17 @@ package genericminecraft;
 
 import java.util.HashMap;
 import java.util.Random;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE1;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE2;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import org.newdawn.slick.opengl.Texture;
+import org.newdawn.slick.opengl.TextureLoader;
+import org.newdawn.slick.util.ResourceLoader;
 
 /***************************************************************
 * @file: Chunk.java
@@ -19,6 +30,8 @@ public class World {
     
     private HashMap < String, Chunk > chunks = new HashMap < String, Chunk >();
     
+    public static int TEXTURE_ID;
+    
     private final int COLLISION_CHECK_DISTANCE = 2;
     private final int CHUNKS_X = 4;
     private final int CHUNKS_Z = 4;
@@ -29,9 +42,13 @@ public class World {
     static final SimplexNoise HUMIDITY_NOISE = new SimplexNoise(300, 0.6, R.nextInt());
     private Player player;
     
+    private Texture texture1, texture2;
+    
     
     public World(Player player)
     {
+        initTextures();
+        TEXTURE_ID = texture1.getTextureID();
         loadChunks();
         this.player = player;
     }
@@ -142,6 +159,61 @@ public class World {
                     }
                 }
             }
+        }
+    }
+    
+    private void rebuildChunkMeshes()
+    {
+        for(int i = 0; i < CHUNKS_X; i++)
+        {
+            for(int j = 0; j < CHUNKS_Z; j++)
+            {
+                chunks.get(i + " " + j).rebuildMesh();
+            }
+        }
+    }
+    
+    public Texture getTexture1()
+    {
+        return texture1;
+    }
+    public Texture getTexture2()
+    {
+        return texture2;
+    }
+    
+    private void initTextures()
+    {
+        texture1 = setTexture("terrain.png");
+        texture1.setTextureFilter(GL_NEAREST);
+        texture2 = setTexture("terrain2.png");
+        texture2.setTextureFilter(GL_NEAREST);
+    }
+    
+    private Texture setTexture(String fileName)
+    {
+        try
+        {
+            return TextureLoader.getTexture("PNG",
+                    ResourceLoader.getResourceAsStream(fileName));
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    public void changeTexture()
+    {
+        if(TEXTURE_ID == texture1.getTextureID())
+        {
+            TEXTURE_ID = texture2.getTextureID();
+        }
+        else
+        {
+            TEXTURE_ID = texture1.getTextureID();
         }
     }
     

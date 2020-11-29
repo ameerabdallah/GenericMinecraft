@@ -6,9 +6,6 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.Sys;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import org.newdawn.slick.opengl.Texture;
-import org.newdawn.slick.opengl.TextureLoader;
-import org.newdawn.slick.util.ResourceLoader;
 
 /***************************************************************
 * @file: Chunk.java
@@ -37,13 +34,10 @@ public class Chunk
     // looking at chunks from a top down view, the z axis goes up and x goes right
     private Chunk forward, backward, left, right;
     
-    
     // VBO Handles
     private int VBOVertexHandle;
     private int VBOColorHandle;
     private int VBOTextureHandle;
-    
-    private Texture texture;
     
     public final int CHUNK_X, CHUNK_Z;
     private Random r;
@@ -56,6 +50,7 @@ public class Chunk
     private int bOffsetX;
     private int bOffsetZ;
     
+    
     // method: Chunk()
     // purpose: Generate chunk and set up rebuildMesh at the end
     public Chunk(int chunkX, int chunkZ)
@@ -66,26 +61,6 @@ public class Chunk
      
         bOffsetX = chunkX*CHUNK_SIZE;
         bOffsetZ = chunkZ*CHUNK_SIZE;
-        
-        // open and generate texture
-        
-        try
-        {
-            if(tCheck)
-            {
-            texture = TextureLoader.getTexture("PNG",
-                    ResourceLoader.getResourceAsStream("terrain.png"));
-            }
-            else{
-                texture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("terrain2.png"));
-            }
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-        texture.bind();
-        texture.setTextureFilter(GL_NEAREST);
         
         r = new Random();
         
@@ -168,7 +143,7 @@ public class Chunk
             glColorPointer(3, GL_FLOAT, 0, 0L);
             
             glBindBuffer(GL_ARRAY_BUFFER, VBOTextureHandle);
-            glBindTexture(GL_TEXTURE_2D, 1);
+            glBindTexture(GL_TEXTURE_2D, World.TEXTURE_ID);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);
             
             glDrawArrays(GL_QUADS, 0,
