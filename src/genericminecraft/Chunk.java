@@ -29,6 +29,7 @@ public class Chunk
     static final int CUBE_LENGTH = 2;
     // This is the multiplier for the height map generated with noise
     static final int HEIGHT_VARIATION = 60; 
+    public boolean tCheck;
     
     // 3D Array of blocks that are inside the chunk
     private Block[][][] blocks;
@@ -70,8 +71,14 @@ public class Chunk
         
         try
         {
+            if(tCheck)
+            {
             texture = TextureLoader.getTexture("PNG",
                     ResourceLoader.getResourceAsStream("terrain.png"));
+            }
+            else{
+                texture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("terrain2.png"));
+            }
         }
         catch(Exception e)
         {

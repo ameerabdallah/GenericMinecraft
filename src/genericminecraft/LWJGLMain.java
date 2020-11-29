@@ -96,7 +96,7 @@ public class LWJGLMain {
     
     // World
     private World world;
-    
+    public Chunk textureChanger;
     // method: LWJGLMain
     // initialize information
     public LWJGLMain() throws IOException
@@ -181,6 +181,15 @@ public class LWJGLMain {
         if(Keyboard.isKeyDown(Keyboard.KEY_D)) 
         {
             player.updateVelocityRight(dt);
+        }
+        if(Keyboard.isKeyDown(Keyboard.KEY_F4))
+        {
+            if(textureChanger.tCheck = false)
+            {
+                textureChanger.tCheck = true;
+            }
+            textureChanger.tCheck = false;
+            
         }
         if(Keyboard.isKeyDown(Keyboard.KEY_A)) 
         {
