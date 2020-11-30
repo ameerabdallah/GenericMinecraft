@@ -185,7 +185,7 @@ public class LWJGLMain {
         }
         if (InputHelper.isKeyReleased(Keyboard.KEY_F4))
         {
-                world.changeTexture();
+            world.changeTexture();
         }
         if(InputHelper.isKeyDown(Keyboard.KEY_D)) 
         {

@@ -146,8 +146,7 @@ public class Chunk
             glBindTexture(GL_TEXTURE_2D, World.TEXTURE_ID);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);
             
-            glDrawArrays(GL_QUADS, 0,
-                        CHUNK_SIZE*CHUNK_SIZE_Y*CHUNK_SIZE*24);
+            glDrawArrays(GL_QUADS, 0, CHUNK_SIZE*CHUNK_SIZE_Y*CHUNK_SIZE*24);
         glPopMatrix();
     }
     
